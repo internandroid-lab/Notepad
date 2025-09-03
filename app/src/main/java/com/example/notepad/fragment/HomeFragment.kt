@@ -91,10 +91,12 @@ class HomeFragment : Fragment() {
                 searchEditText.visibility = View.VISIBLE
                 titleTextView.visibility = View.GONE
                 searchEditText.requestFocus()
+                searchIcon.setImageResource(R.drawable.ic_close)
             } else {
                 searchEditText.visibility = View.GONE
                 titleTextView.visibility = View.VISIBLE
                 searchEditText.text.clear()
+                searchIcon.setImageResource(R.drawable.ic_search)
             }
         }
     }
