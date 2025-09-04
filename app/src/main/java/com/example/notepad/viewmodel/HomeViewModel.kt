@@ -38,6 +38,7 @@ class HomeViewModel(private val repository: NoteRepository) : ViewModel() {
                     when (currentSortType) {
                         SortType.BY_DATE -> repository.getNotesSortedByDate()
                         SortType.BY_TITLE -> repository.getNotesSortedByTitle()
+                        else -> repository.getAllNotes()
                     }
                 }
                 _notes.value = notesList
