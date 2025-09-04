@@ -20,8 +20,8 @@ import com.example.notepad.adapter.NoteAdapter
 import com.example.notepad.db.AppDatabase
 import com.example.notepad.repository.NoteRepository
 import com.example.notepad.viewmodel.HomeViewModel
-import com.example.notepad.viewmodel.HomeViewModelFactory
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class HomeFragment : Fragment() {
 
@@ -33,11 +33,7 @@ class HomeFragment : Fragment() {
     private lateinit var titleTextView: TextView
     private lateinit var noteAdapter: NoteAdapter
 
-    private val viewModel: HomeViewModel by viewModels {
-        val database = AppDatabase.getDatabase(requireContext())
-        val repository = NoteRepository(database.noteDao())
-        HomeViewModelFactory(repository)
-    }
+    private val viewModel: HomeViewModel by viewModel()
 
     override fun onCreateView(
         inflater: LayoutInflater,

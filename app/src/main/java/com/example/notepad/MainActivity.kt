@@ -9,7 +9,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Hide action bar since we're using custom toolbar
         supportActionBar?.hide()
     }
 }
