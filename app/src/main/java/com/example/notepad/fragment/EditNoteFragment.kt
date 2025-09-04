@@ -15,7 +15,6 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.notepad.R
 import com.example.notepad.databinding.FragmentEditNoteBinding
-import com.example.notepad.databinding.FragmentHomeBinding
 import com.example.notepad.utils.AppUtil
 import com.example.notepad.viewmodel.EditNoteViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -35,7 +34,8 @@ class EditNoteFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_edit_note, container, false)
+        _binding = FragmentEditNoteBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

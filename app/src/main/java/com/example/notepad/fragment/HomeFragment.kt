@@ -7,10 +7,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.core.os.bundleOf
+import androidx.core.view.GravityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.notepad.R
 import com.example.notepad.adapter.NoteAdapter
@@ -34,7 +36,7 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
-        return inflater.inflate(R.layout.fragment_home, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -110,6 +112,45 @@ class HomeFragment : Fragment() {
 
         binding.etSearch.addTextChangedListener { text ->
             viewModel.searchNotes(text.toString())
+        }
+
+        binding.ivMenu.setOnClickListener {
+            binding.drawerLayout.openDrawer(GravityCompat.START)
+        }
+
+        binding.navigationView.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.nav_notes -> {
+                    Toast.makeText(context, "Notes clicked", Toast.LENGTH_SHORT).show()
+                }
+
+                R.id.nav_categories -> {
+                    Toast.makeText(context, "Categories clicked", Toast.LENGTH_SHORT).show()
+                }
+
+                R.id.nav_backup -> {
+                    Toast.makeText(context, "Backup clicked", Toast.LENGTH_SHORT).show()
+                }
+
+                R.id.nav_trash -> {
+                    Toast.makeText(context, "Trash clicked", Toast.LENGTH_SHORT).show()
+                }
+
+                R.id.nav_settings -> {
+                    Toast.makeText(context, "Settings clicked", Toast.LENGTH_SHORT).show()
+                }
+
+                R.id.nav_rate -> {
+                }
+
+                R.id.nav_help -> {
+                }
+
+                R.id.nav_privacy -> {
+                }
+            }
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+            true
         }
     }
 
