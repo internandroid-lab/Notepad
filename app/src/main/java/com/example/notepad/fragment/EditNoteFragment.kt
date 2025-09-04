@@ -8,10 +8,12 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.addCallback
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.notepad.R
+import com.example.notepad.utils.AppUtil
 import com.example.notepad.viewmodel.EditNoteViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -46,6 +48,13 @@ class EditNoteFragment : Fragment() {
 
         val noteId = arguments?.getLong("noteId", 0L) ?: 0L
         viewModel.loadNote(noteId)
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            findNavController().navigateUp()
+        }
+
+        AppUtil.setupKeyboardHiderForAllViews(view)
+
     }
 
     private fun initViews(view: View) {
@@ -83,10 +92,10 @@ class EditNoteFragment : Fragment() {
 
         viewModel.deleteResult.observe(viewLifecycleOwner) { success ->
             if (success) {
-                Toast.makeText(requireContext(), getString(R.string.delete_successfully), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, getString(R.string.delete_successfully), Toast.LENGTH_SHORT).show()
                 findNavController().navigateUp()
             } else {
-                Toast.makeText(requireContext(), getString(R.string.delete_failed), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, getString(R.string.delete_failed), Toast.LENGTH_SHORT).show()
             }
         }
     }

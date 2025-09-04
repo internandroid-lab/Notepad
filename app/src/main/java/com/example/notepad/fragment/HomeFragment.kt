@@ -1,27 +1,29 @@
 package com.example.notepad.fragment
 
 import android.app.AlertDialog
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.addCallback
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.notepad.R
 import com.example.notepad.adapter.NoteAdapter
-import com.example.notepad.db.AppDatabase
-import com.example.notepad.repository.NoteRepository
+import com.example.notepad.utils.AppUtil
 import com.example.notepad.viewmodel.HomeViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import androidx.core.view.isVisible
 
 class HomeFragment : Fragment() {
 
@@ -50,6 +52,8 @@ class HomeFragment : Fragment() {
         setupRecyclerView()
         setupObservers()
         setupClickListeners()
+
+        AppUtil.setupKeyboardHiderForAllViews(view)
     }
 
     override fun onResume() {
@@ -105,6 +109,11 @@ class HomeFragment : Fragment() {
 
         searchIcon.setOnClickListener {
             viewModel.toggleSearchMode()
+            if (searchEditText.isVisible) {
+                searchEditText.requestFocus()
+                val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.showSoftInput(searchEditText, InputMethodManager.SHOW_IMPLICIT)
+            }
         }
 
         sortIcon.setOnClickListener {

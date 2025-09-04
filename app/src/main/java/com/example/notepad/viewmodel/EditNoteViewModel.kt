@@ -95,17 +95,20 @@ class EditNoteViewModel(private val repository: NoteRepository) : ViewModel() {
 
     fun deleteNote(){
         val noteId = _note.value?.noteId ?: return
-        if (noteId == 0L) return
+        if (noteId == 0L) {
+            _deleteResult.value = false
+            return
+        }
 
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
                     repository.deleteNote(noteId)
                 }
-                _deleteResult.postValue(true)
+                _deleteResult.value = true
             } catch (e: Exception) {
                 e.printStackTrace()
-                _deleteResult.postValue(false)
+                _deleteResult.value = false
             }
         }
     }

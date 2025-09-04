@@ -9,7 +9,7 @@
     <string name="add_new_successfully">Note saved successfully</string>
     <string name="add_new_failed">Please enter title or content</string>
     <string name="delete_successfully">Delete successfully</string>
-    <string name="delete_failed">Delete failed</string>
+    <string name="delete_failed">Delete failed, you are creating a new note.</string>
     <string name="undo">UNDO</string>
     <string name="search_notes">Search notes...</string>
     <string name="delete">DELETE</string>
