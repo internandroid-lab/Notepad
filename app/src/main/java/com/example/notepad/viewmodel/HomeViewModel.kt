@@ -6,7 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.notepad.db.Note
 import com.example.notepad.repository.NoteRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class HomeViewModel(private val repository: NoteRepository) : ViewModel() {
 
@@ -32,9 +34,11 @@ class HomeViewModel(private val repository: NoteRepository) : ViewModel() {
     fun loadNotes() {
         viewModelScope.launch {
             try {
-                val notesList = when (currentSortType) {
-                    SortType.BY_DATE -> repository.getNotesSortedByDate()
-                    SortType.BY_TITLE -> repository.getNotesSortedByTitle()
+                val notesList = withContext(Dispatchers.IO){
+                    when (currentSortType) {
+                        SortType.BY_DATE -> repository.getNotesSortedByDate()
+                        SortType.BY_TITLE -> repository.getNotesSortedByTitle()
+                    }
                 }
                 _notes.value = notesList
             } catch (e: Exception) {
@@ -50,7 +54,9 @@ class HomeViewModel(private val repository: NoteRepository) : ViewModel() {
         } else {
             viewModelScope.launch {
                 try {
-                    val searchResults = repository.searchNotes(query)
+                    val searchResults = withContext(Dispatchers.IO){
+                        repository.searchNotes(query)
+                    }
                     _notes.value = searchResults
                 } catch (e: Exception) {
                     e.printStackTrace()

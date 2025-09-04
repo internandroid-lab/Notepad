@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="@color/background_color">
 
-    <!-- Top Bar -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/toolbar"
         android:layout_width="0dp"
@@ -17,27 +16,25 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Back Icon -->
         <ImageView
             android:id="@+id/iv_back"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_marginStart="16dp"
+            android:contentDescription=""
             android:src="@drawable/ic_arrow_back"
-            android:contentDescription="Back"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:tint="@color/white" />
 
-        <!-- Title -->
         <TextView
             android:id="@+id/tv_toolbar_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:text="Note"
+            android:text="@string/app_name"
             android:textColor="@color/white"
             android:textSize="20sp"
             android:textStyle="bold"
@@ -46,13 +43,12 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
 
-        <!-- Save Button -->
         <TextView
             android:id="@+id/tv_save"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:text="SAVE"
+            android:layout_marginEnd="8dp"
+            android:text="@string/save"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold"
@@ -62,25 +58,38 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
 
-        <!-- Undo Button -->
         <TextView
             android:id="@+id/tv_undo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:text="UNDO"
+            android:layout_marginEnd="8dp"
+            android:text="@string/undo"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold"
             android:padding="8dp"
             android:background="?android:attr/selectableItemBackgroundBorderless"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tv_delete"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
 
+        <TextView
+            android:id="@+id/tv_delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:text="@string/delete"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Content Container -->
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -96,14 +105,13 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Title EditText -->
             <EditText
                 android:id="@+id/et_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:background="@drawable/edittext_background"
-                android:hint="Enter title..."
+                android:hint="@string/hint_title"
                 android:textColor="@color/text_color"
                 android:textColorHint="@color/text_hint_color"
                 android:textSize="20sp"
@@ -113,7 +121,6 @@
                 android:inputType="textCapSentences|textMultiLine"
                 tools:ignore="Autofill,LabelFor" />
 
-            <!-- Content EditText -->
             <EditText
                 android:id="@+id/et_content"
                 android:layout_width="match_parent"
@@ -121,7 +128,7 @@
                 android:layout_weight="1"
                 android:minHeight="300dp"
                 android:background="@drawable/edittext_background"
-                android:hint="Enter content..."
+                android:hint="@string/hint_content"
                 android:textColor="@color/text_color"
                 android:textColorHint="@color/text_hint_color"
                 android:textSize="16sp"

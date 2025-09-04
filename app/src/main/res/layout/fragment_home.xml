@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="@color/background_color">
 
-    <!-- Top Bar -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/toolbar"
         android:layout_width="0dp"
@@ -17,27 +16,25 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Menu Icon -->
         <ImageView
             android:id="@+id/iv_menu"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_marginStart="16dp"
             android:src="@drawable/ic_menu"
-            android:contentDescription="Menu"
+            android:contentDescription=""
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:tint="@color/white" />
 
-        <!-- Title -->
         <TextView
             android:id="@+id/tv_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:text="Note"
+            android:text="@string/app_name"
             android:textColor="@color/white"
             android:textSize="20sp"
             android:textStyle="bold"
@@ -46,7 +43,6 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
 
-        <!-- Search EditText (Initially Hidden) -->
         <EditText
             android:id="@+id/et_search"
             android:layout_width="0dp"
@@ -54,7 +50,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:background="@drawable/search_background"
-            android:hint="Search notes..."
+            android:hint="@string/search_notes"
             android:textColor="@color/text_color"
             android:textColorHint="@color/text_hint_color"
             android:textSize="16sp"
@@ -67,20 +63,18 @@
             app:layout_constraintBottom_toBottomOf="parent"
             tools:ignore="Autofill,LabelFor" />
 
-        <!-- Search Icon -->
         <ImageView
             android:id="@+id/iv_search"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_marginEnd="16dp"
             android:src="@drawable/ic_search"
-            android:contentDescription="Search"
+            android:contentDescription=""
             app:layout_constraintEnd_toStartOf="@id/iv_sort"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:tint="@color/white" />
 
-        <!-- Sort Icon -->
         <ImageView
             android:id="@+id/iv_sort"
             android:layout_width="24dp"
@@ -95,7 +89,6 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- RecyclerView for Notes -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_notes"
         android:layout_width="0dp"
@@ -109,7 +102,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
 
-    <!-- Floating Action Button -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add_note"
         android:layout_width="wrap_content"
@@ -117,7 +109,7 @@
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
         android:src="@drawable/ic_add"
-        android:contentDescription="Add Note"
+        android:contentDescription=""
         app:backgroundTint="@color/primary_color"
         app:tint="@color/white"
         app:layout_constraintEnd_toEndOf="parent"

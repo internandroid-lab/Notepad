@@ -20,10 +20,14 @@ class EditNoteFragment : Fragment() {
     private lateinit var backIcon: ImageView
     private lateinit var saveIcon: TextView
     private lateinit var undoIcon: TextView
+    private lateinit var deleteIcon: TextView
     private lateinit var titleEditText: EditText
     private lateinit var contentEditText: EditText
 
     private val viewModel: EditNoteViewModel by viewModel()
+
+    private var isTitleEditing = false
+    private var isContentEditing = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,7 +44,6 @@ class EditNoteFragment : Fragment() {
         setupObservers()
         setupClickListeners()
 
-        // Load note if editing existing note
         val noteId = arguments?.getLong("noteId", 0L) ?: 0L
         viewModel.loadNote(noteId)
     }
@@ -49,38 +52,41 @@ class EditNoteFragment : Fragment() {
         backIcon = view.findViewById(R.id.iv_back)
         saveIcon = view.findViewById(R.id.tv_save)
         undoIcon = view.findViewById(R.id.tv_undo)
+        deleteIcon = view.findViewById(R.id.tv_delete)
         titleEditText = view.findViewById(R.id.et_title)
         contentEditText = view.findViewById(R.id.et_content)
-
-        // Set hints for new note
-        val noteId = arguments?.getLong("noteId", 0L) ?: 0L
-        if (noteId == 0L) {
-            titleEditText.hint = "Enter title..."
-            contentEditText.hint = "Enter content..."
-        }
     }
 
     private fun setupObservers() {
-        viewModel.title.observe(viewLifecycleOwner) { title ->
-            if (titleEditText.text.toString() != title) {
-                titleEditText.setText(title)
-                titleEditText.setSelection(title.length)
-            }
-        }
+        viewModel.note.observe(viewLifecycleOwner) { note ->
+            note?.let {
+                if (!isTitleEditing && titleEditText.text.toString() != it.title) {
+                    titleEditText.setText(it.title)
+                    titleEditText.setSelection(it.title.length)
+                }
 
-        viewModel.content.observe(viewLifecycleOwner) { content ->
-            if (contentEditText.text.toString() != content) {
-                contentEditText.setText(content)
-                contentEditText.setSelection(content.length)
+                if (!isContentEditing && contentEditText.text.toString() != it.content) {
+                    contentEditText.setText(it.content)
+                    contentEditText.setSelection(it.content.length)
+                }
             }
         }
 
         viewModel.saveResult.observe(viewLifecycleOwner) { success ->
             if (success) {
-                Toast.makeText(context, "Note saved successfully", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context?.getString(R.string.add_new_successfully), Toast.LENGTH_SHORT).show()
                 findNavController().navigateUp()
             } else {
-                Toast.makeText(context, "Please enter title or content", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context?.getString(R.string.add_new_failed), Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        viewModel.deleteResult.observe(viewLifecycleOwner) { success ->
+            if (success) {
+                Toast.makeText(requireContext(), getString(R.string.delete_successfully), Toast.LENGTH_SHORT).show()
+                findNavController().navigateUp()
+            } else {
+                Toast.makeText(requireContext(), getString(R.string.delete_failed), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -98,12 +104,19 @@ class EditNoteFragment : Fragment() {
             viewModel.undoLastCharacter()
         }
 
-        titleEditText.addTextChangedListener { text ->
-            viewModel.updateTitle(text.toString())
+        deleteIcon.setOnClickListener {
+            viewModel.deleteNote()
         }
 
-        contentEditText.addTextChangedListener { text ->
-            viewModel.updateContent(text.toString())
+        titleEditText.setOnFocusChangeListener { _, hasFocus -> isTitleEditing = hasFocus }
+        contentEditText.setOnFocusChangeListener { _, hasFocus -> isContentEditing = hasFocus }
+
+        titleEditText.addTextChangedListener {
+            viewModel.updateTitle(it.toString())
+        }
+
+        contentEditText.addTextChangedListener {
+            viewModel.updateContent(it.toString())
         }
     }
 }
