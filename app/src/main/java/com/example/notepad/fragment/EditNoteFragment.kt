@@ -10,13 +10,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.notepad.R
-import com.example.notepad.db.AppDatabase
-import com.example.notepad.repository.NoteRepository
 import com.example.notepad.viewmodel.EditNoteViewModel
-import com.example.notepad.viewmodel.EditNoteViewModelFactory
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class EditNoteFragment : Fragment() {
 
@@ -26,11 +23,7 @@ class EditNoteFragment : Fragment() {
     private lateinit var titleEditText: EditText
     private lateinit var contentEditText: EditText
 
-    private val viewModel: EditNoteViewModel by viewModels {
-        val database = AppDatabase.getDatabase(requireContext())
-        val repository = NoteRepository(database.noteDao())
-        EditNoteViewModelFactory(repository)
-    }
+    private val viewModel: EditNoteViewModel by viewModel()
 
     override fun onCreateView(
         inflater: LayoutInflater,
