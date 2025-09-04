@@ -1,5 +1,6 @@
 package com.example.notepad.fragment
 
+import android.R.attr.text
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -13,18 +14,16 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.notepad.R
+import com.example.notepad.databinding.FragmentEditNoteBinding
+import com.example.notepad.databinding.FragmentHomeBinding
 import com.example.notepad.utils.AppUtil
 import com.example.notepad.viewmodel.EditNoteViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class EditNoteFragment : Fragment() {
 
-    private lateinit var backIcon: ImageView
-    private lateinit var saveIcon: TextView
-    private lateinit var undoIcon: TextView
-    private lateinit var deleteIcon: TextView
-    private lateinit var titleEditText: EditText
-    private lateinit var contentEditText: EditText
+    private var _binding: FragmentEditNoteBinding? = null
+    private val binding get() = _binding!!
 
     private val viewModel: EditNoteViewModel by viewModel()
 
@@ -42,7 +41,6 @@ class EditNoteFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        initViews(view)
         setupObservers()
         setupClickListeners()
 
@@ -57,26 +55,22 @@ class EditNoteFragment : Fragment() {
 
     }
 
-    private fun initViews(view: View) {
-        backIcon = view.findViewById(R.id.iv_back)
-        saveIcon = view.findViewById(R.id.tv_save)
-        undoIcon = view.findViewById(R.id.tv_undo)
-        deleteIcon = view.findViewById(R.id.tv_delete)
-        titleEditText = view.findViewById(R.id.et_title)
-        contentEditText = view.findViewById(R.id.et_content)
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     private fun setupObservers() {
         viewModel.note.observe(viewLifecycleOwner) { note ->
             note?.let {
-                if (!isTitleEditing && titleEditText.text.toString() != it.title) {
-                    titleEditText.setText(it.title)
-                    titleEditText.setSelection(it.title.length)
+                if (!isTitleEditing && binding.etTitle.text.toString() != it.title) {
+                    binding.etTitle.setText(it.title)
+                    binding.etTitle.setSelection(it.title.length)
                 }
 
-                if (!isContentEditing && contentEditText.text.toString() != it.content) {
-                    contentEditText.setText(it.content)
-                    contentEditText.setSelection(it.content.length)
+                if (!isContentEditing && binding.etContent.text.toString() != it.content) {
+                    binding.etContent.setText(it.content)
+                    binding.etContent.setSelection(it.content.length)
                 }
             }
         }
@@ -101,30 +95,30 @@ class EditNoteFragment : Fragment() {
     }
 
     private fun setupClickListeners() {
-        backIcon.setOnClickListener {
+        binding.ivBack.setOnClickListener {
             findNavController().navigateUp()
         }
 
-        saveIcon.setOnClickListener {
+        binding.tvSave.setOnClickListener {
             viewModel.saveNote()
         }
 
-        undoIcon.setOnClickListener {
+        binding.tvUndo.setOnClickListener {
             viewModel.undoLastCharacter()
         }
 
-        deleteIcon.setOnClickListener {
+        binding.tvDelete.setOnClickListener {
             viewModel.deleteNote()
         }
 
-        titleEditText.setOnFocusChangeListener { _, hasFocus -> isTitleEditing = hasFocus }
-        contentEditText.setOnFocusChangeListener { _, hasFocus -> isContentEditing = hasFocus }
+        binding.etTitle.setOnFocusChangeListener { _, hasFocus -> isTitleEditing = hasFocus }
+        binding.etContent.setOnFocusChangeListener { _, hasFocus -> isContentEditing = hasFocus }
 
-        titleEditText.addTextChangedListener {
+        binding.etTitle.addTextChangedListener {
             viewModel.updateTitle(it.toString())
         }
 
-        contentEditText.addTextChangedListener {
+        binding.etContent.addTextChangedListener {
             viewModel.updateContent(it.toString())
         }
     }

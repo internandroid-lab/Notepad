@@ -7,31 +7,23 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.notepad.R
 import com.example.notepad.adapter.NoteAdapter
 import com.example.notepad.utils.AppUtil
 import com.example.notepad.viewmodel.HomeViewModel
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import androidx.core.view.isVisible
+import com.example.notepad.databinding.FragmentHomeBinding
 
 class HomeFragment : Fragment() {
 
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var fab: FloatingActionButton
-    private lateinit var searchIcon: ImageView
-    private lateinit var sortIcon: ImageView
-    private lateinit var searchEditText: EditText
-    private lateinit var titleTextView: TextView
+    private var _binding: FragmentHomeBinding? = null
+    private val binding get() = _binding!!
     private lateinit var noteAdapter: NoteAdapter
 
     private val viewModel: HomeViewModel by viewModel()
@@ -41,13 +33,13 @@ class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        _binding = FragmentHomeBinding.inflate(inflater, container, false)
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        initViews(view)
         setupRecyclerView()
         setupObservers()
         setupClickListeners()
@@ -60,24 +52,21 @@ class HomeFragment : Fragment() {
         viewModel.loadNotes()
     }
 
-    private fun initViews(view: View) {
-        recyclerView = view.findViewById(R.id.recycler_view_notes)
-        fab = view.findViewById(R.id.fab_add_note)
-        searchIcon = view.findViewById(R.id.iv_search)
-        sortIcon = view.findViewById(R.id.iv_sort)
-        searchEditText = view.findViewById(R.id.et_search)
-        titleTextView = view.findViewById(R.id.tv_title)
-    }
 
     private fun setupRecyclerView() {
         noteAdapter = NoteAdapter { note ->
             val bundle = bundleOf("noteId" to note.noteId)
             findNavController().navigate(R.id.action_homeFragment_to_editNoteFragment, bundle)
         }
-        recyclerView.apply {
+        binding.recyclerViewNotes.apply {
             adapter = noteAdapter
             layoutManager = LinearLayoutManager(context)
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     private fun setupObservers() {
@@ -87,39 +76,39 @@ class HomeFragment : Fragment() {
 
         viewModel.isSearchMode.observe(viewLifecycleOwner) { isSearchMode ->
             if (isSearchMode) {
-                searchEditText.visibility = View.VISIBLE
-                titleTextView.visibility = View.GONE
-                searchEditText.requestFocus()
-                searchIcon.setImageResource(R.drawable.ic_close)
+                binding.etSearch.visibility = View.VISIBLE
+                binding.tvTitle.visibility = View.GONE
+                binding.etSearch.requestFocus()
+                binding.ivSearch.setImageResource(R.drawable.ic_close)
             } else {
-                searchEditText.visibility = View.GONE
-                titleTextView.visibility = View.VISIBLE
-                searchEditText.text.clear()
-                searchIcon.setImageResource(R.drawable.ic_search)
+                binding.etSearch.visibility = View.GONE
+                binding.tvTitle.visibility = View.VISIBLE
+                binding.etSearch.text.clear()
+                binding.ivSearch.setImageResource(R.drawable.ic_search)
             }
         }
     }
 
     private fun setupClickListeners() {
-        fab.setOnClickListener {
+        binding.fabAddNote.setOnClickListener {
             val bundle = bundleOf("noteId" to 0L)
             findNavController().navigate(R.id.action_homeFragment_to_editNoteFragment, bundle)
         }
 
-        searchIcon.setOnClickListener {
+        binding.ivSearch.setOnClickListener {
             viewModel.toggleSearchMode()
-            if (searchEditText.isVisible) {
-                searchEditText.requestFocus()
+            if (binding.etSearch.isVisible) {
+                binding.etSearch.requestFocus()
                 val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.showSoftInput(searchEditText, InputMethodManager.SHOW_IMPLICIT)
+                imm.showSoftInput(binding.etSearch, InputMethodManager.SHOW_IMPLICIT)
             }
         }
 
-        sortIcon.setOnClickListener {
+        binding.ivSort.setOnClickListener {
             showSortDialog()
         }
 
-        searchEditText.addTextChangedListener { text ->
+        binding.etSearch.addTextChangedListener { text ->
             viewModel.searchNotes(text.toString())
         }
     }
