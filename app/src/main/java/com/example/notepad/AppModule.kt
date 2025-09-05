@@ -2,7 +2,7 @@ package com.example.notepad
 
 import androidx.room.Room
 import com.example.notepad.db.AppDatabase
-import com.example.notepad.db.NoteDao
+import com.example.notepad.db.dao.NoteDao
 import com.example.notepad.repository.NoteRepository
 import com.example.notepad.viewmodel.EditNoteViewModel
 import com.example.notepad.viewmodel.HomeViewModel

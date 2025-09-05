@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.notepad.db.Note
+import com.example.notepad.db.entity.Note
 import com.example.notepad.repository.NoteRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -38,7 +38,7 @@ class HomeViewModel(private val repository: NoteRepository) : ViewModel() {
                     when (currentSortType) {
                         SortType.BY_DATE -> repository.getNotesSortedByDate()
                         SortType.BY_TITLE -> repository.getNotesSortedByTitle()
-                        else -> repository.getAllNotes()
+                        else -> repository.getAllActiveNotes()
                     }
                 }
                 _notes.value = notesList

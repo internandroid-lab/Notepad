@@ -130,9 +130,6 @@ class HomeFragment : Fragment() {
                     Toast.makeText(context, "Categories clicked", Toast.LENGTH_SHORT).show()
                 }
 
-                R.id.nav_backup -> {
-                    Toast.makeText(context, "Backup clicked", Toast.LENGTH_SHORT).show()
-                }
 
                 R.id.nav_trash -> {
                     Toast.makeText(context, "Trash clicked", Toast.LENGTH_SHORT).show()
@@ -140,15 +137,6 @@ class HomeFragment : Fragment() {
 
                 R.id.nav_settings -> {
                     Toast.makeText(context, "Settings clicked", Toast.LENGTH_SHORT).show()
-                }
-
-                R.id.nav_rate -> {
-                }
-
-                R.id.nav_help -> {
-                }
-
-                R.id.nav_privacy -> {
                 }
             }
             binding.drawerLayout.closeDrawer(GravityCompat.START)

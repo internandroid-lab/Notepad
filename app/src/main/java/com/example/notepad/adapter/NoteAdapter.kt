@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.notepad.R
-import com.example.notepad.db.Note
+import com.example.notepad.db.entity.Note
 
 class NoteAdapter(private val onNoteClick: (Note) -> Unit) :
     ListAdapter<Note, NoteAdapter.NoteViewHolder>(NoteDiffCallback()) {
