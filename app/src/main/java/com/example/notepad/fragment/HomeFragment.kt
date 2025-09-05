@@ -21,6 +21,8 @@ import com.example.notepad.viewmodel.HomeViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import androidx.core.view.isVisible
 import com.example.notepad.databinding.FragmentHomeBinding
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class HomeFragment : Fragment() {
 
