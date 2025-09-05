@@ -41,11 +41,12 @@ class EditNoteFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val noteId = arguments?.getLong("noteId", 0L) ?: 0L
+        val categoryId = arguments?.getLong("categoryId")
+
         setupObservers()
         setupClickListeners()
-
-        val noteId = arguments?.getLong("noteId", 0L) ?: 0L
-        viewModel.loadNote(noteId)
+        viewModel.loadNote(noteId, categoryId)
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             findNavController().navigateUp()

@@ -85,7 +85,7 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
 
     private fun setupClickListeners() {
         binding.fabAddNote.setOnClickListener {
-            val categoryId = arguments?.getLong("categoryId") ?: 0L
+            val categoryId = arguments?.getLong("categoryId")
             val bundle = bundleOf(
                 "noteId" to 0L,
                 "categoryId" to categoryId
