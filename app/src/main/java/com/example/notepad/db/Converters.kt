@@ -9,7 +9,7 @@ class Converters {
     private val formatter = SimpleDateFormat("dd/MM/yyyy, hh:mm a", Locale.getDefault())
 
     @TypeConverter
-    fun fromDate(date: Date?): String? {
+    fun toString(date: Date?): String? {
         return date?.let { formatter.format(it) }
     }
 

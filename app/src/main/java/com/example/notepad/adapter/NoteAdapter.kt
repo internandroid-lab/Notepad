@@ -9,8 +9,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.notepad.R
 import com.example.notepad.db.Note
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 class NoteAdapter(private val onNoteClick: (Note) -> Unit) :
     ListAdapter<Note, NoteAdapter.NoteViewHolder>(NoteDiffCallback()) {
@@ -28,11 +26,10 @@ class NoteAdapter(private val onNoteClick: (Note) -> Unit) :
     inner class NoteViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val titleTextView: TextView = itemView.findViewById(R.id.tv_note_title)
         private val lastEditTextView: TextView = itemView.findViewById(R.id.tv_last_edit)
-        private val dateFormatter = SimpleDateFormat("dd/MM/yyyy, hh:mm a", Locale.getDefault())
 
         fun bind(note: Note) {
             titleTextView.text = note.title
-            lastEditTextView.text = "Last edit: ${dateFormatter.format(note.lastEdit)}"
+            lastEditTextView.text = note.lastEditStr
 
             itemView.setOnClickListener {
                 onNoteClick(note)
