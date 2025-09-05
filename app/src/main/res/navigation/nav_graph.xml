@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_homeFragment_to_editNoteFragment"
             app:destination="@id/editNoteFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_categoriesFragment"
+            app:destination="@id/categoriesFragment" />
     </fragment>
 
     <fragment
@@ -24,6 +27,34 @@
             android:name="noteId"
             app:argType="long"
             android:defaultValue="0L" />
+        <argument
+            android:name="categoryId"
+            app:argType="long"
+            android:defaultValue="0L" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/categoriesFragment"
+        android:name="com.example.notepad.fragment.CategoriesFragment"
+        android:label="Categories"
+        tools:layout="@layout/fragment_categories">
+        <action
+            android:id="@+id/action_categoriesFragment_to_categoryNotesFragment"
+            app:destination="@id/categoryNotesFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/categoryNotesFragment"
+        android:name="com.example.notepad.fragment.CategoryNotesFragment"
+        android:label="Category Notes"
+        tools:layout="@layout/fragment_category_notes">
+        <argument
+            android:name="categoryId"
+            app:argType="long"
+            android:defaultValue="0L" />
+        <action
+            android:id="@+id/action_categoryNotesFragment_to_editNoteFragment"
+            app:destination="@id/editNoteFragment" />
     </fragment>
 
 </navigation>

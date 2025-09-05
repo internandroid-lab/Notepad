@@ -23,20 +23,21 @@ class EditNoteViewModel(private val repository: NoteRepository) : ViewModel() {
     val deleteResult: LiveData<Boolean> = _deleteResult
 
 
-    fun loadNote(noteId: Long) {
+    fun loadNote(noteId: Long, categoryId: Long? = null) {
         if (noteId > 0) {
             viewModelScope.launch {
                 try {
-                    val loadedNote = withContext(Dispatchers.IO){
+                    val notes = withContext(Dispatchers.IO){
                         repository.getNoteById(noteId)
                     }
-                    _note.value = loadedNote
+                    _note.value = notes
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
         } else {
             _note.value = Note(
+                categoryId = categoryId,
                 title = "",
                 content = "",
                 lastEdit = Date()
@@ -61,7 +62,6 @@ class EditNoteViewModel(private val repository: NoteRepository) : ViewModel() {
             _saveResult.value = false
             return
         }
-
 
         val finalNote = currentNote.copy(
             title = titleText.ifEmpty { "Untitled" },
@@ -104,7 +104,6 @@ class EditNoteViewModel(private val repository: NoteRepository) : ViewModel() {
                 }
                 _deleteResult.value = true
             } catch (e: Exception) {
-                e.printStackTrace()
                 _deleteResult.value = false
             }
         }

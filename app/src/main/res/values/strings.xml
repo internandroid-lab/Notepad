@@ -20,4 +20,6 @@
     <string name="rate_the_app">Rate the app</string>
     <string name="help">Help</string>
     <string name="privacy_policy">Privacy policy</string>
+    <string name="new_category_name">New category name</string>
+    <string name="add">ADD</string>
 </resources>

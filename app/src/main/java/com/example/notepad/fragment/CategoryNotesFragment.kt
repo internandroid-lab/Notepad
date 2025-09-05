@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -13,68 +12,70 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.notepad.MainActivity
 import com.example.notepad.R
 import com.example.notepad.adapter.NoteAdapter
-import com.example.notepad.databinding.FragmentHomeBinding
+import com.example.notepad.databinding.FragmentCategoryNotesBinding
 import com.example.notepad.utils.AppUtil
 import com.example.notepad.utils.SortType
-import com.example.notepad.viewmodel.HomeViewModel
+import com.example.notepad.viewmodel.CategoryNotesViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class HomeFragment : Fragment(), MainActivity.ToolbarController {
+class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
 
-    private var _binding: FragmentHomeBinding? = null
+    private var _binding: FragmentCategoryNotesBinding? = null
     private val binding get() = _binding!!
     private lateinit var noteAdapter: NoteAdapter
 
-    private val viewModel: HomeViewModel by viewModel()
+    private val viewModel: CategoryNotesViewModel by viewModel()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        _binding = FragmentHomeBinding.inflate(inflater, container, false)
+    ): View {
+        _binding = FragmentCategoryNotesBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val categoryId = arguments?.getLong("categoryId") ?: 0L
+        viewModel.loadCategory(categoryId)
+
         setupRecyclerView()
         setupObservers()
         setupClickListeners()
 
         (activity as? MainActivity)?.setToolbarController(this)
-
         AppUtil.setupKeyboardHiderForAllViews(view)
     }
 
     override fun onResume() {
         super.onResume()
-        viewModel.loadNotes()
+        viewModel.loadNotesByCategory()
         (activity as? MainActivity)?.setToolbarController(this)
     }
-
 
     private fun setupRecyclerView() {
         noteAdapter = NoteAdapter { note ->
             val bundle = bundleOf("noteId" to note.noteId)
-            findNavController().navigate(R.id.action_homeFragment_to_editNoteFragment, bundle)
+            findNavController().navigate(
+                R.id.action_categoryNotesFragment_to_editNoteFragment,
+                bundle
+            )
         }
-        binding.recyclerViewNotes.apply {
+        binding.rvNotes.apply {
             adapter = noteAdapter
             layoutManager = LinearLayoutManager(context)
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        (activity as? MainActivity)?.setToolbarController(null)
-        _binding = null
-    }
-
     private fun setupObservers() {
         viewModel.notes.observe(viewLifecycleOwner) { notes ->
             noteAdapter.submitList(notes)
+        }
+
+        viewModel.category.observe(viewLifecycleOwner) { category ->
+            (activity as? MainActivity)?.updateToolbarTitle("Notepad Free\n${category.name}")
         }
 
         viewModel.isSearchMode.observe(viewLifecycleOwner) { isSearchMode ->
@@ -84,11 +85,19 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
 
     private fun setupClickListeners() {
         binding.fabAddNote.setOnClickListener {
-            val bundle = bundleOf("noteId" to 0L)
-            findNavController().navigate(R.id.action_homeFragment_to_editNoteFragment, bundle)
+            val categoryId = arguments?.getLong("categoryId") ?: 0L
+            val bundle = bundleOf(
+                "noteId" to 0L,
+                "categoryId" to categoryId
+            )
+            findNavController().navigate(
+                R.id.action_categoryNotesFragment_to_editNoteFragment,
+                bundle
+            )
         }
     }
 
+    // ToolbarController implementation
     override fun onSearchClick() {
         viewModel.toggleSearchMode()
     }
@@ -121,5 +130,12 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
                 }
             }
             .show()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // Clear toolbar controller when fragment is destroyed
+        (activity as? MainActivity)?.setToolbarController(null)
+        _binding = null
     }
 }

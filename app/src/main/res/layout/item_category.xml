@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="12dp"
+    android:background="?android:attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
+
+    <ImageView
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_grid"
+        android:layout_marginEnd="16dp"
+        android:layout_gravity="center_vertical"
+        app:tint="@color/text_color" />
+
+    <TextView
+        android:id="@+id/tv_category_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_gravity="center_vertical"
+        android:textColor="@color/text_color"
+        android:textSize="16sp"
+        tools:text="aaa" />
+
+    <ImageView
+        android:id="@+id/iv_edit"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_edit"
+        android:layout_marginEnd="8dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:padding="4dp"
+        android:clickable="true"
+        android:focusable="true"
+        app:tint="@color/text_secondary_color" />
+
+    <ImageView
+        android:id="@+id/iv_delete"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_delete"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:padding="4dp"
+        android:clickable="true"
+        android:focusable="true"
+        app:tint="@color/text_secondary_color" />
+
+</LinearLayout>

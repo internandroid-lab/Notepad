@@ -3,6 +3,7 @@ package com.example.notepad.db
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.example.notepad.db.dao.CategoryDao
 import com.example.notepad.db.dao.NoteDao
 import com.example.notepad.db.entity.Category
 import com.example.notepad.db.entity.Note
@@ -14,4 +15,6 @@ import com.example.notepad.db.entity.Note
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun noteDao(): NoteDao
+
+    abstract fun categoryDao(): CategoryDao
 }

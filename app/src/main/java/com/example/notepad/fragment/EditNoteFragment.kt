@@ -58,6 +58,17 @@ class EditNoteFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        activity?.findViewById<View>(R.id.toolbar)?.visibility = View.VISIBLE
+    }
+
+    override fun onResume() {
+        super.onResume()
+        activity?.findViewById<View>(R.id.toolbar)?.visibility = View.GONE
+    }
+
+    override fun onPause() {
+        super.onPause()
+        activity?.findViewById<View>(R.id.toolbar)?.visibility = View.VISIBLE
     }
 
     private fun setupObservers() {
