@@ -3,6 +3,7 @@ package com.example.notepad
 import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
@@ -108,26 +109,24 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupNavigationDrawer() {
         binding.navigationView.setNavigationItemSelectedListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.nav_notes -> {
-                    navController.navigate(R.id.homeFragment)
-                }
+            val destinationId = when (menuItem.itemId) {
+                R.id.nav_notes -> R.id.homeFragment
+                R.id.nav_categories -> R.id.categoriesFragment
+//                R.id.nav_trash -> R.id.trashFragment
+//                R.id.nav_settings -> R.id.settingsFragment
+                else -> -1
+            }
 
-                R.id.nav_categories -> {
-                    navController.navigate(R.id.action_homeFragment_to_categoriesFragment)
-                }
-
-                R.id.nav_trash -> {
-                    Toast.makeText(this, "Trash clicked", Toast.LENGTH_SHORT).show()
-                }
-
-                R.id.nav_settings -> {
-                    Toast.makeText(this, "Settings clicked", Toast.LENGTH_SHORT).show()
+            if (destinationId != -1) {
+                if (navController.currentDestination?.id != destinationId) {
+                    navController.popBackStack(navController.graph.startDestinationId, false)
+                    navController.navigate(destinationId)
                 }
             }
             binding.drawerLayout.closeDrawer(GravityCompat.START)
             true
         }
+        binding.navigationView.setCheckedItem(R.id.nav_notes)
     }
 
     private fun showToolbarActions(show: Boolean) {
@@ -164,7 +163,7 @@ class MainActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle("Sort Notes")
             .setItems(sortOptions) { _, which ->
-                Toast.makeText(this, "Sort option ${which + 1} selected", Toast.LENGTH_SHORT).show()
+                Log.d("Sort Dialog","Selected: ${sortOptions[which]}")
             }
             .show()
     }
