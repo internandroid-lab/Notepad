@@ -1,5 +1,6 @@
 package com.example.notepad.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -81,5 +82,15 @@ class CategoryNotesViewModel(
         if (!(_isSearchMode.value ?: false)) {
             loadNotesByCategory()
         }
+    }
+
+    fun importNote(note: Note) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                noteRepository.insertNote(note)
+            }
+        }
+        Log.d("Import note",note.toString())
+        loadNotesByCategory()
     }
 }

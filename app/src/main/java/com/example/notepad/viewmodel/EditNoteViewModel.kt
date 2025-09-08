@@ -1,5 +1,6 @@
 package com.example.notepad.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -37,7 +38,7 @@ class EditNoteViewModel(private val repository: NoteRepository) : ViewModel() {
             }
         } else {
             _note.value = Note(
-                categoryId = categoryId,
+                categoryId = if(categoryId==0L) null else categoryId,
                 title = "",
                 content = "",
                 lastEdit = Date()
@@ -57,6 +58,7 @@ class EditNoteViewModel(private val repository: NoteRepository) : ViewModel() {
         val currentNote = _note.value ?: return
         val titleText = currentNote.title.trim()
         val contentText = currentNote.content.trim()
+        Log.d("savenote","title: $titleText, content: $contentText")
 
         if (titleText.isEmpty() && contentText.isEmpty()) {
             _saveResult.value = false

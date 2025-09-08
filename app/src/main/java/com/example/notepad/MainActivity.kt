@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
 
                 R.id.categoriesFragment -> {
                     currentFragment = "Categories"
-                    binding.tvTitle.text = "Categories"
+                    binding.tvTitle.text = getString(R.string.categories)
                     showToolbarActions(false)
                     binding.navigationView.setCheckedItem(R.id.nav_categories)
                 }
@@ -82,6 +82,12 @@ class MainActivity : AppCompatActivity() {
                 R.id.editNoteFragment -> {
                     currentFragment = "Edit Note"
                     showToolbarActions(false)
+                }
+                R.id.trashFragment -> {
+                    currentFragment = "Trash"
+                    binding.tvTitle.text = getString(R.string.trash)
+                    showToolbarActions(false)
+                    binding.navigationView.setCheckedItem(R.id.nav_trash)
                 }
             }
             exitSearchMode()
@@ -120,8 +126,7 @@ class MainActivity : AppCompatActivity() {
             val destinationId = when (menuItem.itemId) {
                 R.id.nav_notes -> R.id.homeFragment
                 R.id.nav_categories -> R.id.categoriesFragment
-//                R.id.nav_trash -> R.id.trashFragment
-//                R.id.nav_settings -> R.id.settingsFragment
+                R.id.nav_trash -> R.id.trashFragment
                 else -> -1
             }
 

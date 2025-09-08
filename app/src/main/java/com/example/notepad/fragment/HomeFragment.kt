@@ -217,12 +217,10 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
                 uri,
                 Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
             )
-
-            val (successList, failList) = AppUtil.exportMultipleNotes(context, notes, uri)
-
+            AppUtil.exportMultipleNotes(context, notes, uri)
             Toast.makeText(
                 context,
-                "Exported: ${successList.size}/${notes.size}\nFailed: ${failList.size}",
+                "Exported: ${notes.size} file",
                 Toast.LENGTH_LONG
             ).show()
         } else {

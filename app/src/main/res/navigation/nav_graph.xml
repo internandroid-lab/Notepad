@@ -16,6 +16,9 @@
         <action
             android:id="@+id/action_homeFragment_to_categoriesFragment"
             app:destination="@id/categoriesFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_trashFragment"
+            app:destination="@id/trashFragment" />
     </fragment>
 
     <fragment
@@ -55,6 +58,13 @@
         <action
             android:id="@+id/action_categoryNotesFragment_to_editNoteFragment"
             app:destination="@id/editNoteFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/trashFragment"
+        android:name="com.example.notepad.fragment.TrashFragment"
+        android:label="Trash"
+        tools:layout="@layout/fragment_trash">
     </fragment>
 
 </navigation>

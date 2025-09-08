@@ -66,7 +66,7 @@ object AppUtil {
         }
     }
 
-    fun exportNoteToUri(context: Context, note: Note, treeUri: Uri): Boolean {
+    fun exportNote(context: Context, note: Note, treeUri: Uri) {
         val resolver = context.contentResolver
 
         val docUri = DocumentsContract.buildDocumentUriUsingTree(
@@ -77,7 +77,7 @@ object AppUtil {
         val fileName = (note.title.ifBlank { "Untitled" } + ".txt")
             .replace("[\\\\/:*?\"<>|]".toRegex(), "_")
 
-        return try {
+        try {
             val fileUri = DocumentsContract.createDocument(
                 resolver,
                 docUri,
@@ -90,29 +90,17 @@ object AppUtil {
                     val content = note.content ?: ""
                     outputStream.write(content.toByteArray())
                     outputStream.flush()
-                    return true
                 }
             }
             false
         } catch (e: Exception) {
-            e.printStackTrace()
-            false
         }
     }
 
-    fun exportMultipleNotes(context: Context, notes: List<Note>, treeUri: Uri): Pair<List<String>, List<String>> {
-        val successList = mutableListOf<String>()
-        val failList = mutableListOf<String>()
-
+    fun exportMultipleNotes(context: Context, notes: List<Note>, treeUri: Uri){
         for (note in notes) {
-            if (exportNoteToUri(context, note, treeUri)) {
-                successList.add(note.title)
-            } else {
-                failList.add(note.title)
-            }
+            exportNote(context, note, treeUri)
         }
-
-        return successList to failList
     }
 
 }

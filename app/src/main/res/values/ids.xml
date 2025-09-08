@@ -6,4 +6,5 @@
 
     <item name="categoriesFragment" type="id" />
     <item name="categoryNotesFragment" type="id" />
+    <item name="trashFragment" type="id" />
 </resources>

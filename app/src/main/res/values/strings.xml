@@ -26,4 +26,6 @@
     <string name="export_all_files">Export All Files</string>
     <string name="note">Note</string>
     <string name="export">Export</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

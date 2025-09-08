@@ -1,17 +1,10 @@
 package com.example.notepad.fragment
 
-import android.R.attr.text
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.os.FileUtils
-import android.provider.DocumentsContract
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -48,6 +41,10 @@ class EditNoteFragment : Fragment() {
 
         val noteId = arguments?.getLong("noteId", 0L) ?: 0L
         val categoryId = arguments?.getLong("categoryId")
+        if(noteId==0L){
+            binding.tvDelete.visibility=View.GONE
+            binding.tvExport.visibility=View.GONE
+        }
 
         setupObservers()
         setupClickListeners()
@@ -155,13 +152,8 @@ class EditNoteFragment : Fragment() {
                     Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
                 )
 
-                val success = AppUtil.exportNoteToUri(requireContext(), note, uri)
-
-                Toast.makeText(
-                    requireContext(),
-                    if (success) "Exported: ${note.title}" else "Export failed: ${note.title}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                AppUtil.exportNote(requireContext(), note, uri)
+                Toast.makeText(requireContext(), "Exported: ${note.title}", Toast.LENGTH_SHORT).show()
             }
         } else {
             Toast.makeText(requireContext(), "No folder selected", Toast.LENGTH_SHORT).show()
