@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -61,12 +62,14 @@ class MainActivity : AppCompatActivity() {
                     currentFragment = "Home"
                     binding.tvTitle.text = getString(R.string.app_name)
                     showToolbarActions(true)
+                    binding.navigationView.setCheckedItem(R.id.nav_notes)
                 }
 
                 R.id.categoriesFragment -> {
                     currentFragment = "Categories"
                     binding.tvTitle.text = "Categories"
                     showToolbarActions(false)
+                    binding.navigationView.setCheckedItem(R.id.nav_categories)
                 }
 
                 R.id.categoryNotesFragment -> {
@@ -102,6 +105,11 @@ class MainActivity : AppCompatActivity() {
             toolbarController?.onSortClick() ?: showDefaultSortDialog()
         }
 
+        binding.ivAbout.setOnClickListener {
+            showAboutPopupMenu(it)
+        }
+
+
         binding.etSearch.addTextChangedListener { text ->
             toolbarController?.onSearchTextChanged(text.toString())
         }
@@ -119,8 +127,10 @@ class MainActivity : AppCompatActivity() {
 
             if (destinationId != -1) {
                 if (navController.currentDestination?.id != destinationId) {
-                    navController.popBackStack(navController.graph.startDestinationId, false)
-                    navController.navigate(destinationId)
+                    navController.popBackStack(R.id.homeFragment, false)
+                    if (destinationId != R.id.homeFragment) {
+                        navController.navigate(destinationId)
+                    }
                 }
             }
             binding.drawerLayout.closeDrawer(GravityCompat.START)
@@ -132,7 +142,30 @@ class MainActivity : AppCompatActivity() {
     private fun showToolbarActions(show: Boolean) {
         binding.ivSearch.visibility = if (show) View.VISIBLE else View.GONE
         binding.ivSort.visibility = if (show) View.VISIBLE else View.GONE
+        binding.ivAbout.visibility = if (show) View.VISIBLE else View.GONE
     }
+
+    private fun showAboutPopupMenu(v: View) {
+        val popup = PopupMenu(this, v)
+        popup.menuInflater.inflate(R.menu.popup_menu, popup.menu)
+
+        popup.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_import -> {
+                    Toast.makeText(this, "Import File clicked", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                R.id.action_export -> {
+                    Toast.makeText(this, "Export All Files clicked", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                else -> false
+            }
+        }
+
+        popup.show()
+    }
+
 
     private fun toggleSearchMode() {
         isSearchMode = !isSearchMode

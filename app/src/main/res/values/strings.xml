@@ -22,4 +22,6 @@
     <string name="privacy_policy">Privacy policy</string>
     <string name="new_category_name">New category name</string>
     <string name="add">ADD</string>
+    <string name="import_file">Import File</string>
+    <string name="export_all_files">Export All Files</string>
 </resources>
