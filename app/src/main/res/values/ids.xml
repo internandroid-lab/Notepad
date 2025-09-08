@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="action_homeFragment_to_categoriesFragment" type="id" />
+    <item name="action_categoriesFragment_to_categoryNotesFragment" type="id" />
+    <item name="action_categoryNotesFragment_to_editNoteFragment" type="id" />
+
+    <item name="categoriesFragment" type="id" />
+    <item name="categoryNotesFragment" type="id" />
+</resources>

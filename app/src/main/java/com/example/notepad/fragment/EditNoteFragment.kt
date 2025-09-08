@@ -41,11 +41,12 @@ class EditNoteFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val noteId = arguments?.getLong("noteId", 0L) ?: 0L
+        val categoryId = arguments?.getLong("categoryId")
+
         setupObservers()
         setupClickListeners()
-
-        val noteId = arguments?.getLong("noteId", 0L) ?: 0L
-        viewModel.loadNote(noteId)
+        viewModel.loadNote(noteId, categoryId)
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             findNavController().navigateUp()
@@ -58,6 +59,17 @@ class EditNoteFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        activity?.findViewById<View>(R.id.toolbar)?.visibility = View.VISIBLE
+    }
+
+    override fun onResume() {
+        super.onResume()
+        activity?.findViewById<View>(R.id.toolbar)?.visibility = View.GONE
+    }
+
+    override fun onPause() {
+        super.onPause()
+        activity?.findViewById<View>(R.id.toolbar)?.visibility = View.VISIBLE
     }
 
     private fun setupObservers() {

@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.notepad.db.Note
+import com.example.notepad.db.entity.Note
 import com.example.notepad.repository.NoteRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,20 +23,21 @@ class EditNoteViewModel(private val repository: NoteRepository) : ViewModel() {
     val deleteResult: LiveData<Boolean> = _deleteResult
 
 
-    fun loadNote(noteId: Long) {
+    fun loadNote(noteId: Long, categoryId: Long? = null) {
         if (noteId > 0) {
             viewModelScope.launch {
                 try {
-                    val loadedNote = withContext(Dispatchers.IO){
+                    val notes = withContext(Dispatchers.IO){
                         repository.getNoteById(noteId)
                     }
-                    _note.value = loadedNote
+                    _note.value = notes
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
         } else {
             _note.value = Note(
+                categoryId = categoryId,
                 title = "",
                 content = "",
                 lastEdit = Date()
@@ -61,7 +62,6 @@ class EditNoteViewModel(private val repository: NoteRepository) : ViewModel() {
             _saveResult.value = false
             return
         }
-
 
         val finalNote = currentNote.copy(
             title = titleText.ifEmpty { "Untitled" },
@@ -94,20 +94,16 @@ class EditNoteViewModel(private val repository: NoteRepository) : ViewModel() {
     }
 
     fun deleteNote(){
-        val noteId = _note.value?.noteId ?: return
-        if (noteId == 0L) {
-            _deleteResult.value = false
-            return
-        }
+        val currentNote = _note.value ?: return
+        val finalNote = currentNote.copy(onTrash = true)
 
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    repository.deleteNote(noteId)
+                    repository.updateNote(finalNote)
                 }
                 _deleteResult.value = true
             } catch (e: Exception) {
-                e.printStackTrace()
                 _deleteResult.value = false
             }
         }

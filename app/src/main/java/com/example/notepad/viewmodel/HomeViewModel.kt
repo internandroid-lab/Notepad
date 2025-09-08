@@ -4,8 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.notepad.db.Note
+import com.example.notepad.db.entity.Note
 import com.example.notepad.repository.NoteRepository
+import com.example.notepad.utils.SortType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -19,11 +20,6 @@ class HomeViewModel(private val repository: NoteRepository) : ViewModel() {
     val isSearchMode: LiveData<Boolean> = _isSearchMode
 
     private val _searchQuery = MutableLiveData<String>("")
-    val searchQuery: LiveData<String> = _searchQuery
-
-    enum class SortType {
-        BY_DATE, BY_TITLE
-    }
 
     private var currentSortType = SortType.BY_DATE
 
@@ -34,16 +30,14 @@ class HomeViewModel(private val repository: NoteRepository) : ViewModel() {
     fun loadNotes() {
         viewModelScope.launch {
             try {
-                val notesList = withContext(Dispatchers.IO){
+                val notes = withContext(Dispatchers.IO) {
                     when (currentSortType) {
-                        SortType.BY_DATE -> repository.getNotesSortedByDate()
+                        SortType.BY_DATE -> repository.getAllNotes()
                         SortType.BY_TITLE -> repository.getNotesSortedByTitle()
-                        else -> repository.getAllNotes()
                     }
                 }
-                _notes.value = notesList
+                _notes.value = notes
             } catch (e: Exception) {
-                e.printStackTrace()
             }
         }
     }
@@ -55,12 +49,11 @@ class HomeViewModel(private val repository: NoteRepository) : ViewModel() {
         } else {
             viewModelScope.launch {
                 try {
-                    val searchResults = withContext(Dispatchers.IO){
+                    val notes = withContext(Dispatchers.IO) {
                         repository.searchNotes(query)
                     }
-                    _notes.value = searchResults
+                    _notes.value = notes
                 } catch (e: Exception) {
-                    e.printStackTrace()
                 }
             }
         }

@@ -1,17 +1,30 @@
-package com.example.notepad.db
+package com.example.notepad.db.entity
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-@Entity(tableName = "notes")
+@Entity(
+    tableName = "notes",
+    foreignKeys = [
+        ForeignKey(
+            entity = Category::class,
+            parentColumns = ["categoryId"],
+            childColumns = ["categoryId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
 data class Note(
     @PrimaryKey(autoGenerate = true) val noteId: Long = 0,
+    val categoryId: Long? = null,
     val title: String,
     val content: String,
-    val lastEdit: Date
+    val lastEdit: Date,
+    val onTrash: Boolean = false
 ){
     val lastEditStr: String
         get() {
