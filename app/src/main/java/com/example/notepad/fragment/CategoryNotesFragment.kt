@@ -75,7 +75,7 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
         }
 
         viewModel.category.observe(viewLifecycleOwner) { category ->
-            (activity as? MainActivity)?.updateToolbarTitle("Notepad Free\n${category.name}")
+            (activity as? MainActivity)?.updateToolbarTitle("Notepad\n${category.name}")
         }
 
         viewModel.isSearchMode.observe(viewLifecycleOwner) { isSearchMode ->
@@ -97,7 +97,12 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
         }
     }
 
-    // ToolbarController implementation
+    override fun onDestroyView() {
+        super.onDestroyView()
+        (activity as? MainActivity)?.setToolbarController(null)
+        _binding = null
+    }
+
     override fun onSearchClick() {
         viewModel.toggleSearchMode()
     }
@@ -118,6 +123,10 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
         (activity as? MainActivity)?.showSearchField(show)
     }
 
+    override fun onAboutClick() {
+        TODO("Not yet implemented")
+    }
+
     private fun showSortDialog() {
         val sortOptions = arrayOf("Sort by Date", "Sort by Title")
 
@@ -130,12 +139,5 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
                 }
             }
             .show()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        // Clear toolbar controller when fragment is destroyed
-        (activity as? MainActivity)?.setToolbarController(null)
-        _binding = null
     }
 }

@@ -2,7 +2,10 @@ package com.example.notepad
 
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -10,15 +13,13 @@ import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
-import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.setupWithNavController
 import com.example.notepad.databinding.ActivityMainBinding
-import com.example.notepad.fragment.HomeFragment
 import com.example.notepad.utils.AppUtil
 import androidx.activity.addCallback
+import androidx.activity.result.contract.ActivityResultContracts
 
 class MainActivity : AppCompatActivity() {
 
@@ -33,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         fun onSearchTextChanged(query: String)
         fun updateTitle(title: String)
         fun showSearchField(show: Boolean)
+        fun onAboutClick()
     }
 
     private var toolbarController: ToolbarController? = null
@@ -74,13 +76,11 @@ class MainActivity : AppCompatActivity() {
 
                 R.id.categoryNotesFragment -> {
                     currentFragment = "Category Notes"
-                    binding.tvTitle.text = "Notepad Free"
                     showToolbarActions(true)
                 }
 
                 R.id.editNoteFragment -> {
                     currentFragment = "Edit Note"
-                    binding.tvTitle.text = "Edit Note"
                     showToolbarActions(false)
                 }
             }
@@ -102,11 +102,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.ivSort.setOnClickListener {
-            toolbarController?.onSortClick() ?: showDefaultSortDialog()
+            toolbarController?.onSortClick() ?: showSortDialog()
         }
 
         binding.ivAbout.setOnClickListener {
-            showAboutPopupMenu(it)
+            toolbarController?.onAboutClick()
         }
 
 
@@ -145,27 +145,6 @@ class MainActivity : AppCompatActivity() {
         binding.ivAbout.visibility = if (show) View.VISIBLE else View.GONE
     }
 
-    private fun showAboutPopupMenu(v: View) {
-        val popup = PopupMenu(this, v)
-        popup.menuInflater.inflate(R.menu.popup_menu, popup.menu)
-
-        popup.setOnMenuItemClickListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.action_import -> {
-                    Toast.makeText(this, "Import File clicked", Toast.LENGTH_SHORT).show()
-                    true
-                }
-                R.id.action_export -> {
-                    Toast.makeText(this, "Export All Files clicked", Toast.LENGTH_SHORT).show()
-                    true
-                }
-                else -> false
-            }
-        }
-
-        popup.show()
-    }
-
 
     private fun toggleSearchMode() {
         isSearchMode = !isSearchMode
@@ -191,7 +170,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showDefaultSortDialog() {
+    private fun showSortDialog() {
         val sortOptions = arrayOf("Sort by Date", "Sort by Title")
         AlertDialog.Builder(this)
             .setTitle("Sort Notes")

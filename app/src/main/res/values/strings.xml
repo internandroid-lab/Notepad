@@ -3,16 +3,16 @@
     <string name="add_note">Add Note</string>
     <string name="edit_note">Edit Note</string>
     <string name="note_hint">Enter your note...</string>
-    <string name="save">SAVE</string>
+    <string name="save">Save</string>
     <string name="hint_content">Enter content...</string>
     <string name="hint_title">Enter title...</string>
     <string name="add_new_successfully">Note saved successfully</string>
     <string name="add_new_failed">Please enter title or content</string>
     <string name="delete_successfully">Delete successfully</string>
     <string name="delete_failed">Delete failed, you are creating a new note.</string>
-    <string name="undo">UNDO</string>
+    <string name="undo">Undo</string>
     <string name="search_notes">Search notes...</string>
-    <string name="delete">DELETE</string>
+    <string name="delete">Delete</string>
     <string name="categories">Categories</string>
     <string name="backup">Backup</string>
     <string name="trash">Trash</string>
@@ -24,4 +24,6 @@
     <string name="add">ADD</string>
     <string name="import_file">Import File</string>
     <string name="export_all_files">Export All Files</string>
+    <string name="note">Note</string>
+    <string name="export">Export</string>
 </resources>
