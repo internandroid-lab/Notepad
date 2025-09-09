@@ -1,15 +1,13 @@
 package com.example.notepad.fragment
 
-import android.R.attr.text
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.addCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -43,6 +41,10 @@ class EditNoteFragment : Fragment() {
 
         val noteId = arguments?.getLong("noteId", 0L) ?: 0L
         val categoryId = arguments?.getLong("categoryId")
+        if(noteId==0L){
+            binding.tvDelete.visibility=View.GONE
+            binding.tvExport.visibility=View.GONE
+        }
 
         setupObservers()
         setupClickListeners()
@@ -69,7 +71,7 @@ class EditNoteFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-        activity?.findViewById<View>(R.id.toolbar)?.visibility = View.VISIBLE
+        activity?.findViewById<View>(R.id.toolbar)?.visibility = View.GONE
     }
 
     private fun setupObservers() {
@@ -123,6 +125,10 @@ class EditNoteFragment : Fragment() {
             viewModel.deleteNote()
         }
 
+        binding.tvExport.setOnClickListener {
+            exportFolderLauncher.launch(null)
+        }
+
         binding.etTitle.setOnFocusChangeListener { _, hasFocus -> isTitleEditing = hasFocus }
         binding.etContent.setOnFocusChangeListener { _, hasFocus -> isContentEditing = hasFocus }
 
@@ -132,6 +138,25 @@ class EditNoteFragment : Fragment() {
 
         binding.etContent.addTextChangedListener {
             viewModel.updateContent(it.toString())
+        }
+    }
+
+    private val exportFolderLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        if (uri != null) {
+            val note = viewModel.note.value
+            if (note != null) {
+                requireContext().contentResolver.takePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+
+                AppUtil.exportNote(requireContext(), note, uri)
+                Toast.makeText(requireContext(), "Exported: ${note.title}", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(requireContext(), "No folder selected", Toast.LENGTH_SHORT).show()
         }
     }
 }

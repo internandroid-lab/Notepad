@@ -10,6 +10,7 @@ import com.example.notepad.viewmodel.CategoriesViewModel
 import com.example.notepad.viewmodel.CategoryNotesViewModel
 import com.example.notepad.viewmodel.EditNoteViewModel
 import com.example.notepad.viewmodel.HomeViewModel
+import com.example.notepad.viewmodel.TrashViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -30,5 +31,6 @@ val appModule = module{
     viewModel { HomeViewModel(get()) }
     viewModel { EditNoteViewModel(get()) }
     viewModel { CategoriesViewModel(get()) }
+    viewModel { TrashViewModel(get()) }
     viewModel { CategoryNotesViewModel(get(),get()) }
 }

@@ -1,10 +1,14 @@
 package com.example.notepad.fragment
 
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -13,10 +17,12 @@ import com.example.notepad.MainActivity
 import com.example.notepad.R
 import com.example.notepad.adapter.NoteAdapter
 import com.example.notepad.databinding.FragmentCategoryNotesBinding
+import com.example.notepad.db.entity.Note
 import com.example.notepad.utils.AppUtil
 import com.example.notepad.utils.SortType
 import com.example.notepad.viewmodel.CategoryNotesViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import java.util.Date
 
 class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
 
@@ -55,6 +61,36 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
         (activity as? MainActivity)?.setToolbarController(this)
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        (activity as? MainActivity)?.setToolbarController(null)
+        _binding = null
+    }
+
+    override fun onSearchClick() {
+        viewModel.toggleSearchMode()
+    }
+
+    override fun onSortClick() {
+        showSortDialog()
+    }
+
+    override fun onSearchTextChanged(query: String) {
+        viewModel.searchNotes(query)
+    }
+
+    override fun updateTitle(title: String) {
+        (activity as? MainActivity)?.updateToolbarTitle(title)
+    }
+
+    override fun showSearchField(show: Boolean) {
+        (activity as? MainActivity)?.showSearchField(show)
+    }
+
+    override fun onAboutClick() {
+        showAboutPopupMenu()
+    }
+
     private fun setupRecyclerView() {
         noteAdapter = NoteAdapter { note ->
             val bundle = bundleOf("noteId" to note.noteId)
@@ -75,7 +111,7 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
         }
 
         viewModel.category.observe(viewLifecycleOwner) { category ->
-            (activity as? MainActivity)?.updateToolbarTitle("Notepad Free\n${category.name}")
+            (activity as? MainActivity)?.updateToolbarTitle("Notepad\n${category.name}")
         }
 
         viewModel.isSearchMode.observe(viewLifecycleOwner) { isSearchMode ->
@@ -97,27 +133,6 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
         }
     }
 
-    // ToolbarController implementation
-    override fun onSearchClick() {
-        viewModel.toggleSearchMode()
-    }
-
-    override fun onSortClick() {
-        showSortDialog()
-    }
-
-    override fun onSearchTextChanged(query: String) {
-        viewModel.searchNotes(query)
-    }
-
-    override fun updateTitle(title: String) {
-        (activity as? MainActivity)?.updateToolbarTitle(title)
-    }
-
-    override fun showSearchField(show: Boolean) {
-        (activity as? MainActivity)?.showSearchField(show)
-    }
-
     private fun showSortDialog() {
         val sortOptions = arrayOf("Sort by Date", "Sort by Title")
 
@@ -132,10 +147,79 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
             .show()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        // Clear toolbar controller when fragment is destroyed
-        (activity as? MainActivity)?.setToolbarController(null)
-        _binding = null
+    private fun showAboutPopupMenu() {
+        val popup = PopupMenu(requireContext(), requireActivity().findViewById(R.id.iv_about))
+        popup.menuInflater.inflate(R.menu.popup_menu, popup.menu)
+
+        popup.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_import -> {
+                    openTextFilePicker()
+                    true
+                }
+                R.id.action_export -> {
+                    exportFolderLauncher.launch(null)
+                    true
+                }
+                else -> false
+            }
+        }
+
+        popup.show()
+    }
+
+    private val importFileLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            val context = requireContext()
+
+            context.contentResolver.takePersistableUriPermission(
+                uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+
+            val fileName = AppUtil.getFileName(context, uri) ?: "Imported Note"
+            val fileContent = AppUtil.readTextFileFromUri(context, uri) ?: ""
+
+            val note = Note(
+                categoryId = viewModel.category.value.categoryId,
+                title = fileName,
+                content = fileContent,
+                lastEdit = Date()
+            )
+            viewModel.importNote(note)
+
+            Toast.makeText(context, "Imported: $fileName", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(requireContext(), "No file selected", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun openTextFilePicker() {
+        val mimeTypes = arrayOf("text/plain")
+        importFileLauncher.launch(mimeTypes)
+    }
+
+    private val exportFolderLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        if (uri != null) {
+            val context = requireContext()
+            val notes = viewModel.notes.value ?: return@registerForActivityResult
+
+            context.contentResolver.takePersistableUriPermission(
+                uri,
+                Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+            AppUtil.exportMultipleNotes(context, notes, uri)
+            Toast.makeText(
+                context,
+                "Exported: ${notes.size} file",
+                Toast.LENGTH_LONG
+            ).show()
+        } else {
+            Toast.makeText(requireContext(), "No folder selected", Toast.LENGTH_SHORT).show()
+        }
     }
 }

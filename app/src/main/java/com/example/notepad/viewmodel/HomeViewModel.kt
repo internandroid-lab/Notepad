@@ -1,5 +1,6 @@
 package com.example.notepad.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -69,6 +70,16 @@ class HomeViewModel(private val repository: NoteRepository) : ViewModel() {
 
     fun sortNotes(sortType: SortType) {
         currentSortType = sortType
+        loadNotes()
+    }
+
+    fun importNote(note: Note) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                repository.insertNote(note)
+            }
+        }
+        Log.d("Import note",note.toString())
         loadNotes()
     }
 }

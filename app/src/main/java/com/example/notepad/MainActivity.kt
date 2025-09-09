@@ -2,21 +2,24 @@ package com.example.notepad
 
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.OpenableColumns
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
-import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.setupWithNavController
 import com.example.notepad.databinding.ActivityMainBinding
-import com.example.notepad.fragment.HomeFragment
 import com.example.notepad.utils.AppUtil
 import androidx.activity.addCallback
+import androidx.activity.result.contract.ActivityResultContracts
 
 class MainActivity : AppCompatActivity() {
 
@@ -31,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         fun onSearchTextChanged(query: String)
         fun updateTitle(title: String)
         fun showSearchField(show: Boolean)
+        fun onAboutClick()
     }
 
     private var toolbarController: ToolbarController? = null
@@ -60,24 +64,30 @@ class MainActivity : AppCompatActivity() {
                     currentFragment = "Home"
                     binding.tvTitle.text = getString(R.string.app_name)
                     showToolbarActions(true)
+                    binding.navigationView.setCheckedItem(R.id.nav_notes)
                 }
 
                 R.id.categoriesFragment -> {
                     currentFragment = "Categories"
-                    binding.tvTitle.text = "Categories"
+                    binding.tvTitle.text = getString(R.string.categories)
                     showToolbarActions(false)
+                    binding.navigationView.setCheckedItem(R.id.nav_categories)
                 }
 
                 R.id.categoryNotesFragment -> {
                     currentFragment = "Category Notes"
-                    binding.tvTitle.text = "Notepad Free"
                     showToolbarActions(true)
                 }
 
                 R.id.editNoteFragment -> {
                     currentFragment = "Edit Note"
-                    binding.tvTitle.text = "Edit Note"
                     showToolbarActions(false)
+                }
+                R.id.trashFragment -> {
+                    currentFragment = "Trash"
+                    binding.tvTitle.text = getString(R.string.trash)
+                    showToolbarActions(false)
+                    binding.navigationView.setCheckedItem(R.id.nav_trash)
                 }
             }
             exitSearchMode()
@@ -98,8 +108,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.ivSort.setOnClickListener {
-            toolbarController?.onSortClick() ?: showDefaultSortDialog()
+            toolbarController?.onSortClick() ?: showSortDialog()
         }
+
+        binding.ivAbout.setOnClickListener {
+            toolbarController?.onAboutClick()
+        }
+
 
         binding.etSearch.addTextChangedListener { text ->
             toolbarController?.onSearchTextChanged(text.toString())
@@ -108,32 +123,33 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupNavigationDrawer() {
         binding.navigationView.setNavigationItemSelectedListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.nav_notes -> {
-                    navController.navigate(R.id.homeFragment)
-                }
+            val destinationId = when (menuItem.itemId) {
+                R.id.nav_notes -> R.id.homeFragment
+                R.id.nav_categories -> R.id.categoriesFragment
+                R.id.nav_trash -> R.id.trashFragment
+                else -> -1
+            }
 
-                R.id.nav_categories -> {
-                    navController.navigate(R.id.action_homeFragment_to_categoriesFragment)
-                }
-
-                R.id.nav_trash -> {
-                    Toast.makeText(this, "Trash clicked", Toast.LENGTH_SHORT).show()
-                }
-
-                R.id.nav_settings -> {
-                    Toast.makeText(this, "Settings clicked", Toast.LENGTH_SHORT).show()
+            if (destinationId != -1) {
+                if (navController.currentDestination?.id != destinationId) {
+                    navController.popBackStack(R.id.homeFragment, false)
+                    if (destinationId != R.id.homeFragment) {
+                        navController.navigate(destinationId)
+                    }
                 }
             }
             binding.drawerLayout.closeDrawer(GravityCompat.START)
             true
         }
+        binding.navigationView.setCheckedItem(R.id.nav_notes)
     }
 
     private fun showToolbarActions(show: Boolean) {
         binding.ivSearch.visibility = if (show) View.VISIBLE else View.GONE
         binding.ivSort.visibility = if (show) View.VISIBLE else View.GONE
+        binding.ivAbout.visibility = if (show) View.VISIBLE else View.GONE
     }
+
 
     private fun toggleSearchMode() {
         isSearchMode = !isSearchMode
@@ -159,12 +175,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showDefaultSortDialog() {
+    private fun showSortDialog() {
         val sortOptions = arrayOf("Sort by Date", "Sort by Title")
         AlertDialog.Builder(this)
             .setTitle("Sort Notes")
             .setItems(sortOptions) { _, which ->
-                Toast.makeText(this, "Sort option ${which + 1} selected", Toast.LENGTH_SHORT).show()
+                Log.d("Sort Dialog","Selected: ${sortOptions[which]}")
             }
             .show()
     }
