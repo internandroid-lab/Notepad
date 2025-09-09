@@ -1,5 +1,6 @@
 package com.example.notepad.fragment
 
+import android.R.attr.category
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
@@ -20,6 +21,7 @@ import com.example.notepad.R
 import com.example.notepad.adapter.NoteAdapter
 import com.example.notepad.databinding.FragmentHomeBinding
 import com.example.notepad.databinding.FragmentTrashBinding
+import com.example.notepad.db.entity.Category
 import com.example.notepad.db.entity.Note
 import com.example.notepad.utils.AppUtil
 import com.example.notepad.utils.SortType
@@ -50,15 +52,13 @@ class TrashFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupRecyclerView()
-
-
+        setupObservers()
         AppUtil.setupKeyboardHiderForAllViews(view)
     }
 
     private fun setupRecyclerView() {
         noteAdapter = NoteAdapter { note ->
-            val bundle = bundleOf("noteId" to note.noteId)
-            findNavController().navigate(R.id.action_homeFragment_to_editNoteFragment, bundle)
+            showTrashDialog(note)
         }
         binding.recyclerViewNotes.apply {
             adapter = noteAdapter
@@ -66,12 +66,26 @@ class TrashFragment : Fragment() {
         }
     }
 
-//    private fun setupObservers() {
-//        viewModel.notes.observe(viewLifecycleOwner) { notes ->
-//            noteAdapter.submitList(notes)
-//        }
-//    }
+    private fun setupObservers() {
+        viewModel.notes.observe(viewLifecycleOwner) { notes ->
+            noteAdapter.submitList(notes)
+        }
+    }
 
-
+    private fun showTrashDialog(note: Note) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete Note")
+            .setPositiveButton("Delete") { _, _ ->
+                viewModel.deleteNote(note)
+                Toast.makeText(context, "Delete success", Toast.LENGTH_SHORT).show()
+            }
+            .setNeutralButton("Undelete") { _, _ ->
+                val finalNote = note.copy(onTrash = false)
+                viewModel.updateNote(finalNote)
+                Toast.makeText(context, "Undelete success", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
 
 }
