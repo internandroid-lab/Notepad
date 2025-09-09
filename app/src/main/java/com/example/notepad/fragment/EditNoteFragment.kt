@@ -1,7 +1,21 @@
 package com.example.notepad.fragment
 
+import android.app.AlertDialog
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Color
+import android.graphics.Typeface
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.text.Editable
+import android.text.Spannable
+import android.text.Spanned
+import android.text.TextWatcher
+import android.text.style.BackgroundColorSpan
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
+import android.text.style.UnderlineSpan
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +30,9 @@ import com.example.notepad.databinding.FragmentEditNoteBinding
 import com.example.notepad.utils.AppUtil
 import com.example.notepad.viewmodel.EditNoteViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import yuku.ambilwarna.AmbilWarnaDialog
+import androidx.core.graphics.toColorInt
+import androidx.core.graphics.drawable.toDrawable
 
 class EditNoteFragment : Fragment() {
 
@@ -23,6 +40,12 @@ class EditNoteFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: EditNoteViewModel by viewModel()
+
+    private var isBold = false
+    private var isItalic = false
+    private var isUnderline = false
+    private var textColor: Int? = null
+    private var bgColor: Int? = null
 
     private var isTitleEditing = false
     private var isContentEditing = false
@@ -54,7 +77,7 @@ class EditNoteFragment : Fragment() {
             findNavController().navigateUp()
         }
 
-        AppUtil.setupKeyboardHiderForAllViews(view)
+//        AppUtil.setupKeyboardHiderForAllViews(view)
 
     }
 
@@ -139,6 +162,41 @@ class EditNoteFragment : Fragment() {
         binding.etContent.addTextChangedListener {
             viewModel.updateContent(it.toString())
         }
+
+
+        binding.btnBold.setOnClickListener {
+            binding.btnBold.isSelected = !binding.btnBold.isSelected
+        }
+
+        binding.btnItalic.setOnClickListener {
+            binding.btnItalic.isSelected = !binding.btnItalic.isSelected
+        }
+
+        binding.btnUnderline.setOnClickListener {
+            binding.btnUnderline.isSelected = !binding.btnUnderline.isSelected
+        }
+
+        binding.btnHighligh.setOnClickListener {
+            openColorPicker{selectedColor ->
+                if (selectedColor != null) {
+                    val colorInt = selectedColor.toColorInt()
+                    binding.btnHighligh.background = colorInt.toDrawable()
+                } else {
+                    binding.btnHighligh.background = null
+                }
+            }
+        }
+
+        binding.btnTextColor.setOnClickListener {
+            openColorPicker{selectedColor ->
+                if (selectedColor != null) {
+                    val colorInt = selectedColor.toColorInt()
+                    binding.btnTextColor.background = colorInt.toDrawable()
+                } else {
+                    binding.btnTextColor.background = null
+                }
+            }
+        }
     }
 
     private val exportFolderLauncher = registerForActivityResult(
@@ -158,5 +216,23 @@ class EditNoteFragment : Fragment() {
         } else {
             Toast.makeText(requireContext(), "No folder selected", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun openColorPicker(onColorSelected: (String?) -> Unit) {
+        val defaultColor = "#FF0000".toColorInt()
+        val colorPicker = AmbilWarnaDialog(
+            requireContext(),
+            defaultColor,
+            true,
+            object : AmbilWarnaDialog.OnAmbilWarnaListener {
+                override fun onOk(dialog: AmbilWarnaDialog?, color: Int) {
+                    val hexColor = String.format("#%08X", color)
+                    onColorSelected(hexColor)
+                }
+                override fun onCancel(dialog: AmbilWarnaDialog?) {
+                    onColorSelected(null)
+                }
+            })
+        colorPicker.show()
     }
 }
