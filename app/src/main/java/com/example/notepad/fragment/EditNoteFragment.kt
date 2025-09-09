@@ -159,9 +159,35 @@ class EditNoteFragment : Fragment() {
             viewModel.updateTitle(it.toString())
         }
 
-        binding.etContent.addTextChangedListener {
-            viewModel.updateContent(it.toString())
-        }
+//        binding.etContent.addTextChangedListener {
+//            viewModel.updateContent(it.toString())
+//        }
+
+        binding.etContent.addTextChangedListener(object : TextWatcher {
+            private var startPos = 0
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                startPos = start
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+            override fun afterTextChanged(s: Editable?) {
+                if (s == null) return
+                if (binding.btnBold.isSelected) {
+                    val end = startPos + 1
+                    if (end <= s.length && startPos >= 0) {
+                        s.setSpan(
+                            StyleSpan(Typeface.BOLD),
+                            startPos,
+                            end,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+                }
+            }
+        })
+
 
 
         binding.btnBold.setOnClickListener {
