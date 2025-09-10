@@ -87,12 +87,12 @@ class EditNoteViewModel(private val repository: NoteRepository) : ViewModel() {
         return true
     }
 
-    fun undoLastCharacter() {
-        val currentContent = _note.value?.content ?: return
-        if (currentContent.isNotEmpty()) {
-            _note.value = _note.value?.copy(content = currentContent.dropLast(1))
-        }
-    }
+//    fun undoLastCharacter() {
+//        val currentContent = _note.value?.content ?: return
+//        if (currentContent.isNotEmpty()) {
+//            _note.value = _note.value?.copy(content = currentContent.dropLast(1))
+//        }
+//    }
 
     fun deleteNote(){
         val currentNote = _note.value ?: return

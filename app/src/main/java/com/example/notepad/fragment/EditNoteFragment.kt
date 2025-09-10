@@ -148,9 +148,9 @@ class EditNoteFragment : Fragment() {
             }
         }
 
-        binding.tvUndo.setOnClickListener {
-            viewModel.undoLastCharacter()
-        }
+//        binding.tvUndo.setOnClickListener {
+//            viewModel.undoLastCharacter()
+//        }
 
         binding.tvDelete.setOnClickListener {
             viewModel.deleteNote()
