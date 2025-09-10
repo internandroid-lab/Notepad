@@ -2,23 +2,19 @@ package com.example.notepad.fragment
 
 import android.app.AlertDialog
 import android.content.Intent
-import android.content.res.ColorStateList
-import android.graphics.Color
 import android.graphics.Typeface
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Editable
 import android.text.Spannable
-import android.text.Spanned
 import android.text.TextWatcher
-import android.text.style.BackgroundColorSpan
-import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
-import android.text.style.UnderlineSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.SeekBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -40,12 +36,6 @@ class EditNoteFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: EditNoteViewModel by viewModel()
-
-    private var isBold = false
-    private var isItalic = false
-    private var isUnderline = false
-    private var textColor: Int? = null
-    private var bgColor: Int? = null
 
     private var isTitleEditing = false
     private var isContentEditing = false
@@ -129,6 +119,22 @@ class EditNoteFragment : Fragment() {
                 Toast.makeText(context, getString(R.string.delete_failed), Toast.LENGTH_SHORT).show()
             }
         }
+
+        viewModel.textStyle.observe(viewLifecycleOwner) { textStyle ->
+            binding.btnBold.isSelected = textStyle.isBold
+            binding.btnItalic.isSelected = textStyle.isItalic
+            binding.btnUnderline.isSelected = textStyle.isUnderline
+            if (textStyle.bgColor != null) {
+                binding.btnHighligh.background = textStyle.bgColor.toDrawable()
+            } else {
+                binding.btnHighligh.background = null
+            }
+            if (textStyle.textColor != null) {
+                binding.btnTextColor.background = textStyle.textColor.toDrawable()
+            } else {
+                binding.btnTextColor.background = null
+            }
+        }
     }
 
     private fun setupClickListeners() {
@@ -185,42 +191,37 @@ class EditNoteFragment : Fragment() {
                         )
                     }
                 }
+                viewModel.updateContent(s.toString())
             }
         })
 
-
-
         binding.btnBold.setOnClickListener {
-            binding.btnBold.isSelected = !binding.btnBold.isSelected
+            viewModel.updateBold()
         }
 
         binding.btnItalic.setOnClickListener {
-            binding.btnItalic.isSelected = !binding.btnItalic.isSelected
+            viewModel.updateItalic()
         }
 
         binding.btnUnderline.setOnClickListener {
-            binding.btnUnderline.isSelected = !binding.btnUnderline.isSelected
+            viewModel.updateUnderline()
         }
 
         binding.btnHighligh.setOnClickListener {
             openColorPicker{selectedColor ->
-                if (selectedColor != null) {
-                    val colorInt = selectedColor.toColorInt()
-                    binding.btnHighligh.background = colorInt.toDrawable()
-                } else {
-                    binding.btnHighligh.background = null
-                }
+                viewModel.updateBackgroundColor(selectedColor?.toColorInt())
             }
         }
 
         binding.btnTextColor.setOnClickListener {
             openColorPicker{selectedColor ->
-                if (selectedColor != null) {
-                    val colorInt = selectedColor.toColorInt()
-                    binding.btnTextColor.background = colorInt.toDrawable()
-                } else {
-                    binding.btnTextColor.background = null
-                }
+                viewModel.updateTextColor(selectedColor?.toColorInt())
+            }
+        }
+
+        binding.btnSize.setOnClickListener {
+            showTextSizeDialog{
+                viewModel.updateTextSize(it)
             }
         }
     }
@@ -260,5 +261,40 @@ class EditNoteFragment : Fragment() {
                 }
             })
         colorPicker.show()
+    }
+
+    private fun showTextSizeDialog(onSizeSelected: (Int) -> Unit) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_size, null)
+        val seekBar = dialogView.findViewById<SeekBar>(R.id.seekBar)
+        val tvSelectedSize = dialogView.findViewById<TextView>(R.id.tvSelectedSize)
+        val btnSetDefault = dialogView.findViewById<Button>(R.id.btnSetDefault)
+
+        var selectedSize = 20
+        seekBar.progress = selectedSize
+        tvSelectedSize.text = "Selected: $selectedSize"
+
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                selectedSize = progress
+                tvSelectedSize.text = "Selected: $selectedSize"
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        btnSetDefault.setOnClickListener {
+            selectedSize = 20
+            seekBar.progress = 20
+            tvSelectedSize.text = "Selected: $selectedSize"
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .setPositiveButton("OK") { _, _ ->
+                onSizeSelected(selectedSize)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 }

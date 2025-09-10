@@ -23,6 +23,9 @@ class EditNoteViewModel(private val repository: NoteRepository) : ViewModel() {
     private val _deleteResult = MutableLiveData<Boolean>()
     val deleteResult: LiveData<Boolean> = _deleteResult
 
+    private val _textStyle = MutableLiveData<TextStyle>(TextStyle())
+    val textStyle: LiveData<TextStyle> = _textStyle
+
 
     fun loadNote(noteId: Long, categoryId: Long? = null) {
         if (noteId > 0) {
@@ -110,4 +113,37 @@ class EditNoteViewModel(private val repository: NoteRepository) : ViewModel() {
             }
         }
     }
+
+    fun updateBold() {
+        _textStyle.value = _textStyle.value?.copy(isBold = !_textStyle.value!!.isBold)
+    }
+
+    fun updateItalic() {
+        _textStyle.value = _textStyle.value?.copy(isItalic = !_textStyle.value!!.isItalic)
+    }
+
+    fun updateUnderline() {
+        _textStyle.value = _textStyle.value?.copy(isUnderline = !_textStyle.value!!.isUnderline)
+    }
+
+    fun updateBackgroundColor(color: Int?) {
+        _textStyle.value = _textStyle.value?.copy(bgColor = color)
+    }
+
+    fun updateTextColor(color: Int?) {
+        _textStyle.value = _textStyle.value?.copy(textColor = color)
+    }
+
+    fun updateTextSize(size: Int) {
+        _textStyle.value = _textStyle.value?.copy(size = size)
+    }
 }
+
+data class TextStyle(
+    val isBold: Boolean = false,
+    val isItalic: Boolean = false,
+    val isUnderline: Boolean = false,
+    val bgColor: Int? = null,
+    val textColor: Int? = null,
+    val size: Int = 20
+)

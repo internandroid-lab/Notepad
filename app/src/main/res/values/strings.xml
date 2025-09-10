@@ -26,4 +26,6 @@
     <string name="export_all_files">Export All Files</string>
     <string name="note">Note</string>
     <string name="export">Export</string>
+    <string name="text_size">Text size</string>
+    <string name="set_default_20">SET DEFAULT (20)</string>
 </resources>
