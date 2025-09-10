@@ -136,3 +136,16 @@ fun String.toSpannable(): Spannable {
     parcel.recycle()
     return spanned as? Spannable ?: SpannableString(this)
 }
+
+enum class SortType {
+    BY_DATE, BY_TITLE
+}
+
+data class TextStyle(
+    val isBold: Boolean = false,
+    val isItalic: Boolean = false,
+    val isUnderline: Boolean = false,
+    val bgColor: Int? = null,
+    val textColor: Int? = null,
+    val size: Int = 20
+)

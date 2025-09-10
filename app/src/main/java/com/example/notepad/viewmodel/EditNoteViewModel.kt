@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.notepad.db.entity.Note
 import com.example.notepad.repository.NoteRepository
+import com.example.notepad.utils.TextStyle
 import com.example.notepad.utils.toBase64
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -131,12 +132,3 @@ class EditNoteViewModel(private val repository: NoteRepository) : ViewModel() {
         _textStyle.value = _textStyle.value?.copy(size = size)
     }
 }
-
-data class TextStyle(
-    val isBold: Boolean = false,
-    val isItalic: Boolean = false,
-    val isUnderline: Boolean = false,
-    val bgColor: Int? = null,
-    val textColor: Int? = null,
-    val size: Int = 20
-)
