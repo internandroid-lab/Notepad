@@ -2,15 +2,29 @@ package com.example.notepad.utils
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Typeface
 import android.net.Uri
+import android.os.Parcel
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
+import android.text.Editable
+import android.text.Html
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.TextUtils
+import android.text.style.AbsoluteSizeSpan
+import android.text.style.BackgroundColorSpan
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
+import android.text.style.UnderlineSpan
+import android.util.Base64
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import com.example.notepad.db.entity.Note
+import org.xml.sax.XMLReader
 
 object AppUtil {
     fun hideKeyboard(view: View) {
@@ -103,4 +117,22 @@ object AppUtil {
         }
     }
 
+}
+
+fun Spannable.toBase64(): String {
+    val parcel = Parcel.obtain()
+    TextUtils.writeToParcel(this, parcel, 0)
+    val bytes = parcel.marshall()
+    parcel.recycle()
+    return Base64.encodeToString(bytes, Base64.DEFAULT)
+}
+
+fun String.toSpannable(): Spannable {
+    val bytes = Base64.decode(this, Base64.DEFAULT)
+    val parcel = Parcel.obtain()
+    parcel.unmarshall(bytes, 0, bytes.size)
+    parcel.setDataPosition(0)
+    val spanned = TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(parcel)
+    parcel.recycle()
+    return spanned as? Spannable ?: SpannableString(this)
 }

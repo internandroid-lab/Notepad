@@ -1,13 +1,20 @@
 package com.example.notepad.fragment
 
+import android.R.attr.end
 import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Editable
+import android.text.Html
 import android.text.Spannable
+import android.text.SpannableString
 import android.text.TextWatcher
+import android.text.style.AbsoluteSizeSpan
+import android.text.style.BackgroundColorSpan
+import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
+import android.text.style.UnderlineSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -18,6 +25,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -29,6 +37,7 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import yuku.ambilwarna.AmbilWarnaDialog
 import androidx.core.graphics.toColorInt
 import androidx.core.graphics.drawable.toDrawable
+import com.example.notepad.utils.toSpannable
 
 class EditNoteFragment : Fragment() {
 
@@ -67,7 +76,7 @@ class EditNoteFragment : Fragment() {
             findNavController().navigateUp()
         }
 
-//        AppUtil.setupKeyboardHiderForAllViews(view)
+        AppUtil.setupKeyboardHiderForAllViews(view)
 
     }
 
@@ -92,31 +101,18 @@ class EditNoteFragment : Fragment() {
             note?.let {
                 if (!isTitleEditing && binding.etTitle.text.toString() != it.title) {
                     binding.etTitle.setText(it.title)
-                    binding.etTitle.setSelection(it.title.length)
+                    val safePos = it.title.length.coerceAtMost(binding.etTitle.text?.length ?: 0)
+                    binding.etTitle.setSelection(safePos)
                 }
 
-                if (!isContentEditing && binding.etContent.text.toString() != it.content) {
-                    binding.etContent.setText(it.content)
-                    binding.etContent.setSelection(it.content.length)
+                if (!isContentEditing) {
+                    val spanned = it.content.toSpannable()
+                    if (binding.etContent.text.toString() != spanned.toString()) {
+                        binding.etContent.setText(spanned)
+                        val safePos = spanned.length.coerceAtMost(binding.etContent.text?.length ?: 0)
+                        binding.etContent.setSelection(safePos)
+                    }
                 }
-            }
-        }
-
-        viewModel.saveResult.observe(viewLifecycleOwner) { success ->
-            if (success) {
-                Toast.makeText(context, context?.getString(R.string.add_new_successfully), Toast.LENGTH_SHORT).show()
-                findNavController().navigateUp()
-            } else {
-                Toast.makeText(context, context?.getString(R.string.add_new_failed), Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        viewModel.deleteResult.observe(viewLifecycleOwner) { success ->
-            if (success) {
-                Toast.makeText(context, getString(R.string.delete_successfully), Toast.LENGTH_SHORT).show()
-                findNavController().navigateUp()
-            } else {
-                Toast.makeText(context, getString(R.string.delete_failed), Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -143,7 +139,13 @@ class EditNoteFragment : Fragment() {
         }
 
         binding.tvSave.setOnClickListener {
-            viewModel.saveNote()
+            val success = viewModel.saveNote()
+            if(success){
+                Toast.makeText(context, context?.getString(R.string.save_successfully), Toast.LENGTH_SHORT).show()
+                if(viewModel.note.value?.noteId==0L) findNavController().navigateUp()
+            } else {
+                Toast.makeText(context, context?.getString(R.string.save_failed), Toast.LENGTH_SHORT).show()
+            }
         }
 
         binding.tvUndo.setOnClickListener {
@@ -152,6 +154,7 @@ class EditNoteFragment : Fragment() {
 
         binding.tvDelete.setOnClickListener {
             viewModel.deleteNote()
+            findNavController().navigateUp()
         }
 
         binding.tvExport.setOnClickListener {
@@ -165,10 +168,6 @@ class EditNoteFragment : Fragment() {
             viewModel.updateTitle(it.toString())
         }
 
-//        binding.etContent.addTextChangedListener {
-//            viewModel.updateContent(it.toString())
-//        }
-
         binding.etContent.addTextChangedListener(object : TextWatcher {
             private var startPos = 0
 
@@ -180,18 +179,63 @@ class EditNoteFragment : Fragment() {
 
             override fun afterTextChanged(s: Editable?) {
                 if (s == null) return
-                if (binding.btnBold.isSelected) {
-                    val end = startPos + 1
-                    if (end <= s.length && startPos >= 0) {
+
+                var start = startPos
+                var end = startPos + 1
+
+                if (start < 0) start = 0
+                if (end > s.length) end = s.length
+
+                if (start < end) {
+                    if (binding.btnBold.isSelected) {
                         s.setSpan(
                             StyleSpan(Typeface.BOLD),
-                            startPos,
-                            end,
+                            start, end,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+
+                    if (binding.btnItalic.isSelected) {
+                        s.setSpan(
+                            StyleSpan(Typeface.ITALIC),
+                            start, end,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+
+                    if (binding.btnUnderline.isSelected) {
+                        s.setSpan(
+                            UnderlineSpan(),
+                            start, end,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+
+                    viewModel.textStyle.value?.textColor?.let { color ->
+                        s.setSpan(
+                            ForegroundColorSpan(color),
+                            start, end,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+
+                    viewModel.textStyle.value?.bgColor?.let { color ->
+                        s.setSpan(
+                            BackgroundColorSpan(color),
+                            start, end,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+
+                    viewModel.textStyle.value?.size?.let { size ->
+                        s.setSpan(
+                            AbsoluteSizeSpan(size, true),
+                            start, end,
                             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                         )
                     }
                 }
-                viewModel.updateContent(s.toString())
+                viewModel.updateContent(s)
             }
         })
 

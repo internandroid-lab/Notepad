@@ -6,8 +6,8 @@
     <string name="save">Save</string>
     <string name="hint_content">Enter content...</string>
     <string name="hint_title">Enter title...</string>
-    <string name="add_new_successfully">Note saved successfully</string>
-    <string name="add_new_failed">Please enter title or content</string>
+    <string name="save_successfully">Note saved successfully</string>
+    <string name="save_failed">Please enter title or content</string>
     <string name="delete_successfully">Delete successfully</string>
     <string name="delete_failed">Delete failed, you are creating a new note.</string>
     <string name="undo">Undo</string>

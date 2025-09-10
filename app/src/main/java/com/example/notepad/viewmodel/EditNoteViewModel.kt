@@ -1,5 +1,7 @@
 package com.example.notepad.viewmodel
 
+import android.text.Editable
+import android.text.Spannable
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -7,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.notepad.db.entity.Note
 import com.example.notepad.repository.NoteRepository
+import com.example.notepad.utils.toBase64
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -16,12 +19,6 @@ class EditNoteViewModel(private val repository: NoteRepository) : ViewModel() {
 
     private val _note = MutableLiveData<Note?>()
     val note: LiveData<Note?> = _note
-
-    private val _saveResult = MutableLiveData<Boolean>()
-    val saveResult: LiveData<Boolean> = _saveResult
-
-    private val _deleteResult = MutableLiveData<Boolean>()
-    val deleteResult: LiveData<Boolean> = _deleteResult
 
     private val _textStyle = MutableLiveData<TextStyle>(TextStyle())
     val textStyle: LiveData<TextStyle> = _textStyle
@@ -53,20 +50,20 @@ class EditNoteViewModel(private val repository: NoteRepository) : ViewModel() {
         _note.value = _note.value?.copy(title = newTitle)
     }
 
-    fun updateContent(newContent: String) {
-        _note.value = _note.value?.copy(content = newContent)
+    fun updateContent(spannable: Editable) {
+        val encodedContent = (spannable as Spannable).toBase64()
+        _note.value = _note.value?.copy(content = encodedContent)
+
     }
 
-    fun saveNote() {
-        val currentNote = _note.value ?: return
+    fun saveNote(): Boolean {
+        val currentNote = _note.value ?: return false
         val titleText = currentNote.title.trim()
         val contentText = currentNote.content.trim()
         Log.d("savenote","title: $titleText, content: $contentText")
 
-        if (titleText.isEmpty() && contentText.isEmpty()) {
-            _saveResult.value = false
-            return
-        }
+        if (titleText.isEmpty() && contentText.isEmpty()) return false
+
 
         val finalNote = currentNote.copy(
             title = titleText.ifEmpty { "Untitled" },
@@ -83,12 +80,10 @@ class EditNoteViewModel(private val repository: NoteRepository) : ViewModel() {
                         repository.updateNote(finalNote)
                     }
                 }
-                _saveResult.value = true
             } catch (e: Exception) {
-                e.printStackTrace()
-                _saveResult.value = false
             }
         }
+        return true
     }
 
     fun undoLastCharacter() {
@@ -107,9 +102,7 @@ class EditNoteViewModel(private val repository: NoteRepository) : ViewModel() {
                 withContext(Dispatchers.IO) {
                     repository.updateNote(finalNote)
                 }
-                _deleteResult.value = true
             } catch (e: Exception) {
-                _deleteResult.value = false
             }
         }
     }
