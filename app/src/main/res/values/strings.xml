@@ -28,4 +28,5 @@
     <string name="export">Export</string>
     <string name="text_size">Text size</string>
     <string name="set_default_20">SET DEFAULT (20)</string>
+    <string name="add_to_categories">Add to categories</string>
 </resources>

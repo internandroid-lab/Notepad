@@ -7,7 +7,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.notepad.db.entity.Category
 import com.example.notepad.db.entity.Note
+import com.example.notepad.repository.CategoryRepository
 import com.example.notepad.repository.NoteRepository
 import com.example.notepad.utils.TextStyle
 import com.example.notepad.utils.toBase64
@@ -16,7 +18,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Date
 
-class EditNoteViewModel(private val repository: NoteRepository) : ViewModel() {
+class EditNoteViewModel(
+    private val noteRepository: NoteRepository,
+    private val categoryRepository: CategoryRepository
+) : ViewModel() {
 
     private val _note = MutableLiveData<Note?>()
     val note: LiveData<Note?> = _note
@@ -30,7 +35,7 @@ class EditNoteViewModel(private val repository: NoteRepository) : ViewModel() {
             viewModelScope.launch {
                 try {
                     val notes = withContext(Dispatchers.IO){
-                        repository.getNoteById(noteId)
+                        noteRepository.getNoteById(noteId)
                     }
                     _note.value = notes
                 } catch (e: Exception) {
@@ -44,6 +49,18 @@ class EditNoteViewModel(private val repository: NoteRepository) : ViewModel() {
                 content = "",
                 lastEdit = Date()
             )
+        }
+    }
+
+    suspend fun loadCategory(): List<Category> {
+        return withContext(Dispatchers.IO){
+            categoryRepository.getAllCategories()
+        }
+    }
+
+    fun addToCategories(list: List<Category>){
+        for(i in list){
+            //add to category
         }
     }
 
@@ -76,9 +93,9 @@ class EditNoteViewModel(private val repository: NoteRepository) : ViewModel() {
             try {
                 withContext(Dispatchers.IO) {
                     if (finalNote.noteId == 0L) {
-                        repository.insertNote(finalNote)
+                        noteRepository.insertNote(finalNote)
                     } else {
-                        repository.updateNote(finalNote)
+                        noteRepository.updateNote(finalNote)
                     }
                 }
             } catch (e: Exception) {
@@ -101,7 +118,7 @@ class EditNoteViewModel(private val repository: NoteRepository) : ViewModel() {
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    repository.updateNote(finalNote)
+                    noteRepository.updateNote(finalNote)
                 }
             } catch (e: Exception) {
             }

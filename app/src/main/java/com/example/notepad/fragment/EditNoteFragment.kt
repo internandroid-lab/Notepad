@@ -1,31 +1,27 @@
 package com.example.notepad.fragment
 
-import android.R.attr.end
 import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Editable
-import android.text.Html
 import android.text.Spannable
-import android.text.SpannableString
 import android.text.TextWatcher
 import android.text.style.AbsoluteSizeSpan
 import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.PopupMenu
 import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -37,7 +33,9 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import yuku.ambilwarna.AmbilWarnaDialog
 import androidx.core.graphics.toColorInt
 import androidx.core.graphics.drawable.toDrawable
+import androidx.lifecycle.lifecycleScope
 import com.example.notepad.utils.toSpannable
+import kotlinx.coroutines.launch
 
 class EditNoteFragment : Fragment() {
 
@@ -64,8 +62,9 @@ class EditNoteFragment : Fragment() {
         val noteId = arguments?.getLong("noteId", 0L) ?: 0L
         val categoryId = arguments?.getLong("categoryId")
         if(noteId==0L){
-            binding.tvDelete.visibility=View.GONE
-            binding.tvExport.visibility=View.GONE
+//            binding.tvDelete.visibility=View.GONE
+//            binding.tvExport.visibility=View.GONE
+            binding.ivAbout.visibility=View.GONE
         }
 
         setupObservers()
@@ -152,13 +151,17 @@ class EditNoteFragment : Fragment() {
 //            viewModel.undoLastCharacter()
 //        }
 
-        binding.tvDelete.setOnClickListener {
-            viewModel.deleteNote()
-            findNavController().navigateUp()
-        }
+//        binding.tvDelete.setOnClickListener {
+//            viewModel.deleteNote()
+//            findNavController().navigateUp()
+//        }
+//
+//        binding.tvExport.setOnClickListener {
+//            exportFolderLauncher.launch(null)
+//        }
 
-        binding.tvExport.setOnClickListener {
-            exportFolderLauncher.launch(null)
+        binding.ivAbout.setOnClickListener {
+            showEditMenu()
         }
 
         binding.etTitle.setOnFocusChangeListener { _, hasFocus -> isTitleEditing = hasFocus }
@@ -270,6 +273,31 @@ class EditNoteFragment : Fragment() {
         }
     }
 
+    private fun showEditMenu() {
+        val popup = PopupMenu(requireContext(), requireActivity().findViewById(R.id.iv_about))
+        popup.menuInflater.inflate(R.menu.edit_menu, popup.menu)
+
+        popup.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_delete -> {
+                    viewModel.deleteNote()
+                    findNavController().navigateUp()
+                    true
+                }
+                R.id.add_to_category -> {
+                    showCategoryDialog()
+                    true
+                }
+                R.id.action_export -> {
+                    exportFolderLauncher.launch(null)
+                    true
+                }
+                else -> false
+            }
+        }
+        popup.show()
+    }
+
     private val exportFolderLauncher = registerForActivityResult(
         ActivityResultContracts.OpenDocumentTree()
     ) { uri ->
@@ -313,7 +341,7 @@ class EditNoteFragment : Fragment() {
         val tvSelectedSize = dialogView.findViewById<TextView>(R.id.tvSelectedSize)
         val btnSetDefault = dialogView.findViewById<Button>(R.id.btnSetDefault)
 
-        var selectedSize = 20
+        var selectedSize = viewModel.textStyle.value!!.size
         seekBar.progress = selectedSize
         tvSelectedSize.text = "Selected: $selectedSize"
 
@@ -341,4 +369,27 @@ class EditNoteFragment : Fragment() {
             .setNegativeButton("Cancel", null)
             .show()
     }
+
+    private fun showCategoryDialog() {
+        lifecycleScope.launch {
+            val categories = viewModel.loadCategory()
+            val categoryNames = categories.map { it.name }.toTypedArray()
+
+            val checkedItems = BooleanArray(categories.size) { false }
+
+            AlertDialog.Builder(requireContext())
+                .setTitle("Select category")
+                .setMultiChoiceItems(categoryNames, checkedItems) { _, which, isChecked ->
+                    checkedItems[which] = isChecked
+                }
+                .setPositiveButton("OK") { _, _ ->
+                    val selectedCategories = categories.filterIndexed { index, _ -> checkedItems[index] }
+                    viewModel.addToCategories(selectedCategories   )
+                    Toast.makeText(requireContext(), "${selectedCategories.size}", Toast.LENGTH_SHORT).show()
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
+    }
+
 }
