@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.notepad.db.entity.Category
 import com.example.notepad.db.entity.Note
 import com.example.notepad.repository.CategoryRepository
+import com.example.notepad.repository.CrossReferenceRepository
 import com.example.notepad.repository.NoteRepository
 import com.example.notepad.utils.TextStyle
 import com.example.notepad.utils.toBase64
@@ -19,11 +20,12 @@ import kotlinx.coroutines.withContext
 import java.util.Date
 
 class EditNoteViewModel(
-    private val noteRepository: NoteRepository,
-    private val categoryRepository: CategoryRepository
+    private val noteRepo: NoteRepository,
+    private val cateRepo: CategoryRepository,
+    private val crossRefRepo: CrossReferenceRepository
 ) : ViewModel() {
 
-    private val _note = MutableLiveData<Note?>()
+    private val _note = MutableLiveData<Note>()
     val note: LiveData<Note?> = _note
 
     private val _textStyle = MutableLiveData<TextStyle>(TextStyle())
@@ -34,33 +36,50 @@ class EditNoteViewModel(
         if (noteId > 0) {
             viewModelScope.launch {
                 try {
-                    val notes = withContext(Dispatchers.IO){
-                        noteRepository.getNoteById(noteId)
+                    val note = withContext(Dispatchers.IO){
+                        noteRepo.getNoteById(noteId)
                     }
-                    _note.value = notes
+                    _note.value = note!!
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
         } else {
             _note.value = Note(
-                categoryId = if(categoryId==0L) null else categoryId,
                 title = "",
                 content = "",
                 lastEdit = Date()
             )
         }
+        Log.d("HungDM", "EditNoteViewModel loadNote: categoryId: $categoryId")
     }
 
     suspend fun loadCategory(): List<Category> {
         return withContext(Dispatchers.IO){
-            categoryRepository.getAllCategories()
+            cateRepo.getAllCategories()
         }
     }
 
-    fun addToCategories(list: List<Category>){
-        for(i in list){
-            //add to category
+    suspend fun getCategoriesOfNote(): List<Category> {
+        return withContext(Dispatchers.IO){
+            crossRefRepo.getCategoriesOfNote(_note.value.noteId)
+        }
+    }
+
+    fun updateNote(wasChecked: Boolean, isNowChecked: Boolean, category: Category){
+        if (wasChecked && !isNowChecked) {
+            viewModelScope.launch {
+                withContext(Dispatchers.IO){
+                    crossRefRepo.deleteNoteFromCategory(_note.value.noteId, category.categoryId)
+                }
+            }
+        }
+        if (!wasChecked && isNowChecked) {
+            viewModelScope.launch {
+                withContext(Dispatchers.IO){
+                    crossRefRepo.addNoteToCategory(_note.value.noteId, category.categoryId)
+                }
+            }
         }
     }
 
@@ -74,7 +93,7 @@ class EditNoteViewModel(
 
     }
 
-    fun saveNote(): Boolean {
+    fun saveNote(categoryId: Long): Boolean {
         val currentNote = _note.value ?: return false
         val titleText = currentNote.title.trim()
         val contentText = currentNote.content.trim()
@@ -93,9 +112,12 @@ class EditNoteViewModel(
             try {
                 withContext(Dispatchers.IO) {
                     if (finalNote.noteId == 0L) {
-                        noteRepository.insertNote(finalNote)
+                        val noteId = noteRepo.insertNote(finalNote)
+                        if(categoryId>0){
+                            crossRefRepo.addNoteToCategory(noteId,categoryId)
+                        }
                     } else {
-                        noteRepository.updateNote(finalNote)
+                        noteRepo.updateNote(finalNote)
                     }
                 }
             } catch (e: Exception) {
@@ -104,21 +126,20 @@ class EditNoteViewModel(
         return true
     }
 
-//    fun undoLastCharacter() {
-//        val currentContent = _note.value?.content ?: return
-//        if (currentContent.isNotEmpty()) {
-//            _note.value = _note.value?.copy(content = currentContent.dropLast(1))
-//        }
-//    }
-
-    fun deleteNote(){
+    fun deleteNote(categoryId: Long){
         val currentNote = _note.value ?: return
         val finalNote = currentNote.copy(onTrash = true)
 
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    noteRepository.updateNote(finalNote)
+                    if(categoryId<=0) {
+                        noteRepo.updateNote(finalNote)
+                        Log.d("HungDM", "updateNote")
+                    } else {
+                        crossRefRepo.deleteNoteFromCategory(finalNote.noteId, categoryId)
+                        Log.d("HungDM", "deleteNoteFromCategory: noteID: ${finalNote.noteId}, categoryID: $categoryId")
+                    }
                 }
             } catch (e: Exception) {
             }

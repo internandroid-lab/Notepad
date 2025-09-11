@@ -53,7 +53,7 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
         setupRecyclerView()
         setupObservers()
         setupClickListeners()
-        setupImportFileListener()
+//        setupImportFileListener()
 
         (activity as? MainActivity)?.setToolbarController(this)
 
@@ -99,7 +99,10 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
 
     private fun setupRecyclerView() {
         noteAdapter = NoteAdapter { note ->
-            val bundle = bundleOf("noteId" to note.noteId)
+            val bundle = bundleOf(
+                "noteId" to note.noteId,
+                "categoryId" to -1L
+            )
             findNavController().navigate(R.id.action_homeFragment_to_editNoteFragment, bundle)
         }
         binding.recyclerViewNotes.apply {
@@ -138,20 +141,20 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
             .show()
     }
 
-    private fun setupImportFileListener() {
-        parentFragmentManager.setFragmentResultListener("importFile", viewLifecycleOwner) { _, bundle ->
-            val fileName = bundle.getString("fileName")
-            val fileContent = bundle.getString("fileContent")
-
-            val note = Note(
-                title = fileName ?: "Imported Note",
-                content = fileContent ?: "",
-                lastEdit = Date()
-            )
-            viewModel.importNote(note)
-            Log.d("Read file", note.toString())
-        }
-    }
+//    private fun setupImportFileListener() {
+//        parentFragmentManager.setFragmentResultListener("importFile", viewLifecycleOwner) { _, bundle ->
+//            val fileName = bundle.getString("fileName")
+//            val fileContent = bundle.getString("fileContent")
+//
+//            val note = Note(
+//                title = fileName ?: "Imported Note",
+//                content = fileContent ?: "",
+//                lastEdit = Date()
+//            )
+//            viewModel.importNote(note)
+//            Log.d("Read file", note.toString())
+//        }
+//    }
 
     private fun showAboutPopupMenu() {
         val popup = PopupMenu(requireContext(), requireActivity().findViewById(R.id.iv_about))

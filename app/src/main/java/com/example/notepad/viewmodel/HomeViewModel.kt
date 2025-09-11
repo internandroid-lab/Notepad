@@ -12,7 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class HomeViewModel(private val repository: NoteRepository) : ViewModel() {
+class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
 
     private val _notes = MutableLiveData<List<Note>>()
     val notes: LiveData<List<Note>> = _notes
@@ -33,8 +33,8 @@ class HomeViewModel(private val repository: NoteRepository) : ViewModel() {
             try {
                 val notes = withContext(Dispatchers.IO) {
                     when (currentSortType) {
-                        SortType.BY_DATE -> repository.getAllNotes()
-                        SortType.BY_TITLE -> repository.getNotesSortedByTitle()
+                        SortType.BY_DATE -> noteRepo.getAllNotes()
+                        SortType.BY_TITLE -> noteRepo.getAllNotesSortedByTitle()
                     }
                 }
                 _notes.value = notes
@@ -51,7 +51,7 @@ class HomeViewModel(private val repository: NoteRepository) : ViewModel() {
             viewModelScope.launch {
                 try {
                     val notes = withContext(Dispatchers.IO) {
-                        repository.searchNotes(query)
+                        noteRepo.searchNotes(query)
                     }
                     _notes.value = notes
                 } catch (e: Exception) {
@@ -76,7 +76,7 @@ class HomeViewModel(private val repository: NoteRepository) : ViewModel() {
     fun importNote(note: Note) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                repository.insertNote(note)
+                noteRepo.insertNote(note)
             }
         }
         Log.d("Import note",note.toString())

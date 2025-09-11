@@ -3,8 +3,10 @@ package com.example.notepad.di
 import androidx.room.Room
 import com.example.notepad.db.AppDatabase
 import com.example.notepad.db.dao.CategoryDao
+import com.example.notepad.db.dao.CrossReferenceDao
 import com.example.notepad.db.dao.NoteDao
 import com.example.notepad.repository.CategoryRepository
+import com.example.notepad.repository.CrossReferenceRepository
 import com.example.notepad.repository.NoteRepository
 import com.example.notepad.viewmodel.CategoriesViewModel
 import com.example.notepad.viewmodel.CategoryNotesViewModel
@@ -26,11 +28,13 @@ val appModule = module{
 
     single<NoteDao> { get<AppDatabase>().noteDao() }
     single<CategoryDao> { get<AppDatabase>().categoryDao() }
-    single<NoteRepository> { NoteRepository(get()) }
-    single<CategoryRepository> { CategoryRepository(get()) }
+    single<CrossReferenceDao> { get<AppDatabase>().crossRefDao() }
+    single<NoteRepository> { NoteRepository(get(),get()) }
+    single<CategoryRepository> { CategoryRepository(get(),get()) }
+    single<CrossReferenceRepository> { CrossReferenceRepository(get()) }
     viewModel { HomeViewModel(get()) }
-    viewModel { EditNoteViewModel(get(),get()) }
+    viewModel { EditNoteViewModel(get(),get(),get()) }
     viewModel { CategoriesViewModel(get()) }
     viewModel { TrashViewModel(get()) }
-    viewModel { CategoryNotesViewModel(get(),get()) }
+    viewModel { CategoryNotesViewModel(get(),get(),get()) }
 }
