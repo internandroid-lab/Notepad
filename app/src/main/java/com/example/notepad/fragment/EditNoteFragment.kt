@@ -1,10 +1,24 @@
 package com.example.notepad.fragment
 
+import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Typeface
 import android.os.Bundle
+import android.text.Editable
+import android.text.Spannable
+import android.text.TextWatcher
+import android.text.style.AbsoluteSizeSpan
+import android.text.style.BackgroundColorSpan
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
+import android.text.style.UnderlineSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.PopupMenu
+import android.widget.SeekBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -16,6 +30,12 @@ import com.example.notepad.databinding.FragmentEditNoteBinding
 import com.example.notepad.utils.AppUtil
 import com.example.notepad.viewmodel.EditNoteViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import yuku.ambilwarna.AmbilWarnaDialog
+import androidx.core.graphics.toColorInt
+import androidx.core.graphics.drawable.toDrawable
+import androidx.lifecycle.lifecycleScope
+import com.example.notepad.utils.toSpannable
+import kotlinx.coroutines.launch
 
 class EditNoteFragment : Fragment() {
 
@@ -42,8 +62,9 @@ class EditNoteFragment : Fragment() {
         val noteId = arguments?.getLong("noteId", 0L) ?: 0L
         val categoryId = arguments?.getLong("categoryId")
         if(noteId==0L){
-            binding.tvDelete.visibility=View.GONE
-            binding.tvExport.visibility=View.GONE
+//            binding.tvDelete.visibility=View.GONE
+//            binding.tvExport.visibility=View.GONE
+            binding.ivAbout.visibility=View.GONE
         }
 
         setupObservers()
@@ -79,31 +100,34 @@ class EditNoteFragment : Fragment() {
             note?.let {
                 if (!isTitleEditing && binding.etTitle.text.toString() != it.title) {
                     binding.etTitle.setText(it.title)
-                    binding.etTitle.setSelection(it.title.length)
+                    val safePos = it.title.length.coerceAtMost(binding.etTitle.text?.length ?: 0)
+                    binding.etTitle.setSelection(safePos)
                 }
 
-                if (!isContentEditing && binding.etContent.text.toString() != it.content) {
-                    binding.etContent.setText(it.content)
-                    binding.etContent.setSelection(it.content.length)
+                if (!isContentEditing) {
+                    val spanned = it.content.toSpannable()
+                    if (binding.etContent.text.toString() != spanned.toString()) {
+                        binding.etContent.setText(spanned)
+                        val safePos = spanned.length.coerceAtMost(binding.etContent.text?.length ?: 0)
+                        binding.etContent.setSelection(safePos)
+                    }
                 }
             }
         }
 
-        viewModel.saveResult.observe(viewLifecycleOwner) { success ->
-            if (success) {
-                Toast.makeText(context, context?.getString(R.string.add_new_successfully), Toast.LENGTH_SHORT).show()
-                findNavController().navigateUp()
+        viewModel.textStyle.observe(viewLifecycleOwner) { textStyle ->
+            binding.btnBold.isSelected = textStyle.isBold
+            binding.btnItalic.isSelected = textStyle.isItalic
+            binding.btnUnderline.isSelected = textStyle.isUnderline
+            if (textStyle.bgColor != null) {
+                binding.btnHighligh.background = textStyle.bgColor.toDrawable()
             } else {
-                Toast.makeText(context, context?.getString(R.string.add_new_failed), Toast.LENGTH_SHORT).show()
+                binding.btnHighligh.background = null
             }
-        }
-
-        viewModel.deleteResult.observe(viewLifecycleOwner) { success ->
-            if (success) {
-                Toast.makeText(context, getString(R.string.delete_successfully), Toast.LENGTH_SHORT).show()
-                findNavController().navigateUp()
+            if (textStyle.textColor != null) {
+                binding.btnTextColor.background = textStyle.textColor.toDrawable()
             } else {
-                Toast.makeText(context, getString(R.string.delete_failed), Toast.LENGTH_SHORT).show()
+                binding.btnTextColor.background = null
             }
         }
     }
@@ -114,19 +138,30 @@ class EditNoteFragment : Fragment() {
         }
 
         binding.tvSave.setOnClickListener {
-            viewModel.saveNote()
+            val success = viewModel.saveNote()
+            if(success){
+                Toast.makeText(context, context?.getString(R.string.save_successfully), Toast.LENGTH_SHORT).show()
+                if(viewModel.note.value?.noteId==0L) findNavController().navigateUp()
+            } else {
+                Toast.makeText(context, context?.getString(R.string.save_failed), Toast.LENGTH_SHORT).show()
+            }
         }
 
-        binding.tvUndo.setOnClickListener {
-            viewModel.undoLastCharacter()
-        }
+//        binding.tvUndo.setOnClickListener {
+//            viewModel.undoLastCharacter()
+//        }
 
-        binding.tvDelete.setOnClickListener {
-            viewModel.deleteNote()
-        }
+//        binding.tvDelete.setOnClickListener {
+//            viewModel.deleteNote()
+//            findNavController().navigateUp()
+//        }
+//
+//        binding.tvExport.setOnClickListener {
+//            exportFolderLauncher.launch(null)
+//        }
 
-        binding.tvExport.setOnClickListener {
-            exportFolderLauncher.launch(null)
+        binding.ivAbout.setOnClickListener {
+            showEditMenu()
         }
 
         binding.etTitle.setOnFocusChangeListener { _, hasFocus -> isTitleEditing = hasFocus }
@@ -136,9 +171,131 @@ class EditNoteFragment : Fragment() {
             viewModel.updateTitle(it.toString())
         }
 
-        binding.etContent.addTextChangedListener {
-            viewModel.updateContent(it.toString())
+        binding.etContent.addTextChangedListener(object : TextWatcher {
+            private var startPos = 0
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                startPos = start
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+            override fun afterTextChanged(s: Editable?) {
+                if (s == null) return
+
+                var start = startPos
+                var end = startPos + 1
+
+                if (start < 0) start = 0
+                if (end > s.length) end = s.length
+
+                if (start < end) {
+                    if (binding.btnBold.isSelected) {
+                        s.setSpan(
+                            StyleSpan(Typeface.BOLD),
+                            start, end,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+
+                    if (binding.btnItalic.isSelected) {
+                        s.setSpan(
+                            StyleSpan(Typeface.ITALIC),
+                            start, end,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+
+                    if (binding.btnUnderline.isSelected) {
+                        s.setSpan(
+                            UnderlineSpan(),
+                            start, end,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+
+                    viewModel.textStyle.value?.textColor?.let { color ->
+                        s.setSpan(
+                            ForegroundColorSpan(color),
+                            start, end,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+
+                    viewModel.textStyle.value?.bgColor?.let { color ->
+                        s.setSpan(
+                            BackgroundColorSpan(color),
+                            start, end,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+
+                    viewModel.textStyle.value?.size?.let { size ->
+                        s.setSpan(
+                            AbsoluteSizeSpan(size, true),
+                            start, end,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+                }
+                viewModel.updateContent(s)
+            }
+        })
+
+        binding.btnBold.setOnClickListener {
+            viewModel.updateBold()
         }
+
+        binding.btnItalic.setOnClickListener {
+            viewModel.updateItalic()
+        }
+
+        binding.btnUnderline.setOnClickListener {
+            viewModel.updateUnderline()
+        }
+
+        binding.btnHighligh.setOnClickListener {
+            openColorPicker{selectedColor ->
+                viewModel.updateBackgroundColor(selectedColor?.toColorInt())
+            }
+        }
+
+        binding.btnTextColor.setOnClickListener {
+            openColorPicker{selectedColor ->
+                viewModel.updateTextColor(selectedColor?.toColorInt())
+            }
+        }
+
+        binding.btnSize.setOnClickListener {
+            showTextSizeDialog{
+                viewModel.updateTextSize(it)
+            }
+        }
+    }
+
+    private fun showEditMenu() {
+        val popup = PopupMenu(requireContext(), requireActivity().findViewById(R.id.iv_about))
+        popup.menuInflater.inflate(R.menu.edit_menu, popup.menu)
+
+        popup.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_delete -> {
+                    viewModel.deleteNote()
+                    findNavController().navigateUp()
+                    true
+                }
+                R.id.add_to_category -> {
+                    showCategoryDialog()
+                    true
+                }
+                R.id.action_export -> {
+                    exportFolderLauncher.launch(null)
+                    true
+                }
+                else -> false
+            }
+        }
+        popup.show()
     }
 
     private val exportFolderLauncher = registerForActivityResult(
@@ -159,4 +316,80 @@ class EditNoteFragment : Fragment() {
             Toast.makeText(requireContext(), "No folder selected", Toast.LENGTH_SHORT).show()
         }
     }
+
+    private fun openColorPicker(onColorSelected: (String?) -> Unit) {
+        val defaultColor = "#FF0000".toColorInt()
+        val colorPicker = AmbilWarnaDialog(
+            requireContext(),
+            defaultColor,
+            true,
+            object : AmbilWarnaDialog.OnAmbilWarnaListener {
+                override fun onOk(dialog: AmbilWarnaDialog?, color: Int) {
+                    val hexColor = String.format("#%08X", color)
+                    onColorSelected(hexColor)
+                }
+                override fun onCancel(dialog: AmbilWarnaDialog?) {
+                    onColorSelected(null)
+                }
+            })
+        colorPicker.show()
+    }
+
+    private fun showTextSizeDialog(onSizeSelected: (Int) -> Unit) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_size, null)
+        val seekBar = dialogView.findViewById<SeekBar>(R.id.seekBar)
+        val tvSelectedSize = dialogView.findViewById<TextView>(R.id.tvSelectedSize)
+        val btnSetDefault = dialogView.findViewById<Button>(R.id.btnSetDefault)
+
+        var selectedSize = viewModel.textStyle.value!!.size
+        seekBar.progress = selectedSize
+        tvSelectedSize.text = "Selected: $selectedSize"
+
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                selectedSize = progress
+                tvSelectedSize.text = "Selected: $selectedSize"
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        btnSetDefault.setOnClickListener {
+            selectedSize = 20
+            seekBar.progress = 20
+            tvSelectedSize.text = "Selected: $selectedSize"
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .setPositiveButton("OK") { _, _ ->
+                onSizeSelected(selectedSize)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showCategoryDialog() {
+        lifecycleScope.launch {
+            val categories = viewModel.loadCategory()
+            val categoryNames = categories.map { it.name }.toTypedArray()
+
+            val checkedItems = BooleanArray(categories.size) { false }
+
+            AlertDialog.Builder(requireContext())
+                .setTitle("Select category")
+                .setMultiChoiceItems(categoryNames, checkedItems) { _, which, isChecked ->
+                    checkedItems[which] = isChecked
+                }
+                .setPositiveButton("OK") { _, _ ->
+                    val selectedCategories = categories.filterIndexed { index, _ -> checkedItems[index] }
+                    viewModel.addToCategories(selectedCategories   )
+                    Toast.makeText(requireContext(), "${selectedCategories.size}", Toast.LENGTH_SHORT).show()
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
+    }
+
 }

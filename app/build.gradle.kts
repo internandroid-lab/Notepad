@@ -71,4 +71,6 @@ dependencies {
     implementation("io.insert-koin:koin-core:3.5.3")
     implementation("io.insert-koin:koin-android:3.5.3")
 
+    implementation("com.github.yukuku:ambilwarna:2.0.1")
+
 }

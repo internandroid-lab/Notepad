@@ -29,7 +29,7 @@ val appModule = module{
     single<NoteRepository> { NoteRepository(get()) }
     single<CategoryRepository> { CategoryRepository(get()) }
     viewModel { HomeViewModel(get()) }
-    viewModel { EditNoteViewModel(get()) }
+    viewModel { EditNoteViewModel(get(),get()) }
     viewModel { CategoriesViewModel(get()) }
     viewModel { TrashViewModel(get()) }
     viewModel { CategoryNotesViewModel(get(),get()) }
