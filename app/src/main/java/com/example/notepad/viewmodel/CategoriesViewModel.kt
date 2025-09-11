@@ -19,18 +19,6 @@ class CategoriesViewModel(private val cateRepo: CategoryRepository) : ViewModel(
         loadCategories()
     }
 
-    fun loadCategories() {
-        viewModelScope.launch {
-            try {
-                val categories = withContext(Dispatchers.IO){
-                    cateRepo.getAllCategories()
-                }
-                _categories.value = categories
-            } catch (e: Exception) {
-            }
-        }
-    }
-
     fun addCategory(name: String) {
         if (name.isBlank()) return
 
@@ -65,6 +53,18 @@ class CategoriesViewModel(private val cateRepo: CategoryRepository) : ViewModel(
                     cateRepo.deleteCategory(category)
                 }
                 loadCategories()
+            } catch (e: Exception) {
+            }
+        }
+    }
+
+    private fun loadCategories() {
+        viewModelScope.launch {
+            try {
+                val categories = withContext(Dispatchers.IO){
+                    cateRepo.getAllCategories()
+                }
+                _categories.value = categories
             } catch (e: Exception) {
             }
         }

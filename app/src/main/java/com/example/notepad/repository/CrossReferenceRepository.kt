@@ -5,7 +5,6 @@ import com.example.notepad.db.entity.Category
 import com.example.notepad.db.entity.CrossReference
 import com.example.notepad.db.entity.Note
 
-
 class CrossReferenceRepository(private val crossRef: CrossReferenceDao) {
 
     suspend fun addNoteToCategory(noteId: Long, categoryId: Long) =

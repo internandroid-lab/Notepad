@@ -18,18 +18,6 @@ class TrashViewModel(private val noteRepo: NoteRepository): ViewModel() {
         loadTrashNotes()
     }
 
-    fun loadTrashNotes() {
-        viewModelScope.launch {
-            try {
-                val notes = withContext(Dispatchers.IO){
-                    noteRepo.getAllTrashedNotes()
-                }
-                _notes.value = notes
-            } catch (e: Exception){
-            }
-        }
-    }
-
     fun updateNote(note: Note){
         viewModelScope.launch {
             try {
@@ -50,6 +38,18 @@ class TrashViewModel(private val noteRepo: NoteRepository): ViewModel() {
                     loadTrashNotes()
                 }
             } catch (e: Exception) {
+            }
+        }
+    }
+
+    private fun loadTrashNotes() {
+        viewModelScope.launch {
+            try {
+                val notes = withContext(Dispatchers.IO){
+                    noteRepo.getAllTrashedNotes()
+                }
+                _notes.value = notes
+            } catch (e: Exception){
             }
         }
     }
