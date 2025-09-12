@@ -10,7 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class TrashViewModel(private val repository: NoteRepository): ViewModel() {
+class TrashViewModel(private val noteRepo: NoteRepository): ViewModel() {
     private val _notes = MutableLiveData<List<Note>>()
     val notes: LiveData<List<Note>> = _notes
 
@@ -18,23 +18,11 @@ class TrashViewModel(private val repository: NoteRepository): ViewModel() {
         loadTrashNotes()
     }
 
-    fun loadTrashNotes() {
-        viewModelScope.launch {
-            try {
-                val notes = withContext(Dispatchers.IO){
-                    repository.getAllTrashedNotes()
-                }
-                _notes.value = notes
-            } catch (e: Exception){
-            }
-        }
-    }
-
     fun updateNote(note: Note){
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    repository.updateNote(note)
+                    noteRepo.updateNote(note)
                     loadTrashNotes()
                 }
             } catch (e: Exception) {
@@ -46,10 +34,22 @@ class TrashViewModel(private val repository: NoteRepository): ViewModel() {
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO){
-                    repository.deleteNote(note.noteId)
+                    noteRepo.deleteNote(note)
                     loadTrashNotes()
                 }
             } catch (e: Exception) {
+            }
+        }
+    }
+
+    private fun loadTrashNotes() {
+        viewModelScope.launch {
+            try {
+                val notes = withContext(Dispatchers.IO){
+                    noteRepo.getAllTrashedNotes()
+                }
+                _notes.value = notes
+            } catch (e: Exception){
             }
         }
     }

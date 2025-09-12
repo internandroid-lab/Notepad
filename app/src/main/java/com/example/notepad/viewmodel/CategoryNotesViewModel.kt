@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.notepad.db.entity.Category
 import com.example.notepad.db.entity.Note
 import com.example.notepad.repository.CategoryRepository
+import com.example.notepad.repository.CrossReferenceRepository
 import com.example.notepad.repository.NoteRepository
 import com.example.notepad.utils.SortType
 import kotlinx.coroutines.Dispatchers
@@ -15,8 +16,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class CategoryNotesViewModel(
-    private val cateRepository: CategoryRepository,
-    private val noteRepository: NoteRepository
+    private val cateRepo: CategoryRepository,
+    private val noteRepo: NoteRepository,
+    private val crossRefRepo: CrossReferenceRepository
 ) : ViewModel() {
 
     private val _notes = MutableLiveData<List<Note>>()
@@ -33,11 +35,12 @@ class CategoryNotesViewModel(
     fun loadCategory(categoryId: Long) {
         viewModelScope.launch {
             val category = withContext(Dispatchers.IO){
-                cateRepository.getCategoryById(categoryId)
+                cateRepo.getCategoryById(categoryId)
             }
-            _category.value = category
+            _category.value = category!!
             loadNotesByCategory()
         }
+        Log.d("HungDM", "CategoryNotesViewModel loadCategory: categoryId = $categoryId")
     }
 
     fun loadNotesByCategory() {
@@ -45,8 +48,8 @@ class CategoryNotesViewModel(
             try {
                 val notes= withContext(Dispatchers.IO){
                     when (currentSortType) {
-                        SortType.BY_DATE -> noteRepository.getAllNotesInCategory(_category.value.categoryId)
-                        SortType.BY_TITLE -> noteRepository.getNotesInCategorySortedByTitle(_category.value.categoryId)
+                        SortType.BY_DATE -> crossRefRepo.getAllNotesInCategory(_category.value.categoryId)
+                        SortType.BY_TITLE -> crossRefRepo.getAllNotesInCategorySortedByTitle(_category.value.categoryId)
                     }
                 }
                 _notes.value = notes
@@ -62,7 +65,7 @@ class CategoryNotesViewModel(
             viewModelScope.launch {
                 try {
                     val searchResults = withContext(Dispatchers.IO){
-                        noteRepository.searchNotesInCategory(query,_category.value.categoryId)
+                        crossRefRepo.searchNotesInCategory(_category.value.categoryId,query)
                     }
                     _notes.value = searchResults
                 } catch (e: Exception) {
@@ -87,10 +90,10 @@ class CategoryNotesViewModel(
     fun importNote(note: Note) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                noteRepository.insertNote(note)
+                val noteId = noteRepo.insertNote(note)
+                crossRefRepo.addNoteToCategory(noteId, _category.value.categoryId)
             }
         }
-        Log.d("Import note",note.toString())
         loadNotesByCategory()
     }
 }

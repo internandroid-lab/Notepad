@@ -2,13 +2,7 @@ package com.example.notepad.fragment
 
 import android.app.AlertDialog
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.os.FileUtils
-import android.provider.DocumentsContract
-import android.provider.OpenableColumns
-import android.util.Log
-import android.util.Log.v
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -53,7 +47,6 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
         setupRecyclerView()
         setupObservers()
         setupClickListeners()
-        setupImportFileListener()
 
         (activity as? MainActivity)?.setToolbarController(this)
 
@@ -99,7 +92,10 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
 
     private fun setupRecyclerView() {
         noteAdapter = NoteAdapter { note ->
-            val bundle = bundleOf("noteId" to note.noteId)
+            val bundle = bundleOf(
+                "noteId" to note.noteId,
+                "categoryId" to -1L
+            )
             findNavController().navigate(R.id.action_homeFragment_to_editNoteFragment, bundle)
         }
         binding.recyclerViewNotes.apply {
@@ -136,21 +132,6 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
                 }
             }
             .show()
-    }
-
-    private fun setupImportFileListener() {
-        parentFragmentManager.setFragmentResultListener("importFile", viewLifecycleOwner) { _, bundle ->
-            val fileName = bundle.getString("fileName")
-            val fileContent = bundle.getString("fileContent")
-
-            val note = Note(
-                title = fileName ?: "Imported Note",
-                content = fileContent ?: "",
-                lastEdit = Date()
-            )
-            viewModel.importNote(note)
-            Log.d("Read file", note.toString())
-        }
     }
 
     private fun showAboutPopupMenu() {

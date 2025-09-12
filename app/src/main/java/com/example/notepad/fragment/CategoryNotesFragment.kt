@@ -93,7 +93,11 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
 
     private fun setupRecyclerView() {
         noteAdapter = NoteAdapter { note ->
-            val bundle = bundleOf("noteId" to note.noteId)
+            val categoryId = arguments?.getLong("categoryId")
+            val bundle = bundleOf(
+                "noteId" to note.noteId,
+                "categoryId" to categoryId
+            )
             findNavController().navigate(
                 R.id.action_categoryNotesFragment_to_editNoteFragment,
                 bundle
@@ -183,7 +187,6 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
             val fileContent = AppUtil.readTextFileFromUri(context, uri) ?: ""
 
             val note = Note(
-                categoryId = viewModel.category.value.categoryId,
                 title = fileName,
                 content = fileContent,
                 lastEdit = Date()

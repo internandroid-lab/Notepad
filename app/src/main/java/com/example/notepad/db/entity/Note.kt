@@ -7,20 +7,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-@Entity(
-    tableName = "notes",
-    foreignKeys = [
-        ForeignKey(
-            entity = Category::class,
-            parentColumns = ["categoryId"],
-            childColumns = ["categoryId"],
-            onDelete = ForeignKey.CASCADE
-        )
-    ]
-)
+@Entity(tableName = "notes")
 data class Note(
     @PrimaryKey(autoGenerate = true) val noteId: Long = 0,
-    val categoryId: Long? = null,
     val title: String,
     val content: String,
     val lastEdit: Date,

@@ -44,6 +44,8 @@ class EditNoteFragment : Fragment() {
 
     private val viewModel: EditNoteViewModel by viewModel()
 
+    private var categoryId: Long = -1L
+
     private var isTitleEditing = false
     private var isContentEditing = false
 
@@ -60,10 +62,9 @@ class EditNoteFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val noteId = arguments?.getLong("noteId", 0L) ?: 0L
-        val categoryId = arguments?.getLong("categoryId")
+        val cateId = arguments?.getLong("categoryId") ?: -1L
+        categoryId = cateId
         if(noteId==0L){
-//            binding.tvDelete.visibility=View.GONE
-//            binding.tvExport.visibility=View.GONE
             binding.ivAbout.visibility=View.GONE
         }
 
@@ -138,7 +139,7 @@ class EditNoteFragment : Fragment() {
         }
 
         binding.tvSave.setOnClickListener {
-            val success = viewModel.saveNote()
+            val success = viewModel.saveNote(categoryId)
             if(success){
                 Toast.makeText(context, context?.getString(R.string.save_successfully), Toast.LENGTH_SHORT).show()
                 if(viewModel.note.value?.noteId==0L) findNavController().navigateUp()
@@ -146,19 +147,6 @@ class EditNoteFragment : Fragment() {
                 Toast.makeText(context, context?.getString(R.string.save_failed), Toast.LENGTH_SHORT).show()
             }
         }
-
-//        binding.tvUndo.setOnClickListener {
-//            viewModel.undoLastCharacter()
-//        }
-
-//        binding.tvDelete.setOnClickListener {
-//            viewModel.deleteNote()
-//            findNavController().navigateUp()
-//        }
-//
-//        binding.tvExport.setOnClickListener {
-//            exportFolderLauncher.launch(null)
-//        }
 
         binding.ivAbout.setOnClickListener {
             showEditMenu()
@@ -277,10 +265,14 @@ class EditNoteFragment : Fragment() {
         val popup = PopupMenu(requireContext(), requireActivity().findViewById(R.id.iv_about))
         popup.menuInflater.inflate(R.menu.edit_menu, popup.menu)
 
+        val addToCategoryItem = popup.menu.findItem(R.id.add_to_category)
+
+        addToCategoryItem.isVisible = categoryId <= 0
+
         popup.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.action_delete -> {
-                    viewModel.deleteNote()
+                    viewModel.deleteNote(categoryId)
                     findNavController().navigateUp()
                     true
                 }
@@ -373,9 +365,14 @@ class EditNoteFragment : Fragment() {
     private fun showCategoryDialog() {
         lifecycleScope.launch {
             val categories = viewModel.loadCategory()
+            val categoryOfNote = viewModel.getCategoriesOfNote()
             val categoryNames = categories.map { it.name }.toTypedArray()
 
-            val checkedItems = BooleanArray(categories.size) { false }
+            val initialCheckedItems = BooleanArray(categories.size) { index ->
+                categoryOfNote.any { it.categoryId == categories[index].categoryId }
+            }
+
+            val checkedItems = initialCheckedItems.copyOf()
 
             AlertDialog.Builder(requireContext())
                 .setTitle("Select category")
@@ -383,9 +380,11 @@ class EditNoteFragment : Fragment() {
                     checkedItems[which] = isChecked
                 }
                 .setPositiveButton("OK") { _, _ ->
-                    val selectedCategories = categories.filterIndexed { index, _ -> checkedItems[index] }
-                    viewModel.addToCategories(selectedCategories   )
-                    Toast.makeText(requireContext(), "${selectedCategories.size}", Toast.LENGTH_SHORT).show()
+                    categories.forEachIndexed { index, category ->
+                        val wasChecked = initialCheckedItems[index]
+                        val isNowChecked = checkedItems[index]
+                        viewModel.updateNote(wasChecked, isNowChecked, category)
+                    }
                 }
                 .setNegativeButton("Cancel", null)
                 .show()
