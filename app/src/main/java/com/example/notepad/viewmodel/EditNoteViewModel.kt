@@ -3,6 +3,7 @@ package com.example.notepad.viewmodel
 import android.text.Editable
 import android.text.Spannable
 import android.util.Log
+import android.util.Log.e
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -36,7 +37,7 @@ class EditNoteViewModel(
         if (noteId > 0) {
             viewModelScope.launch {
                 try {
-                    val note = withContext(Dispatchers.IO){
+                    val note = withContext(Dispatchers.IO) {
                         noteRepo.getNoteById(noteId)
                     }
                     _note.value = note!!
@@ -55,28 +56,28 @@ class EditNoteViewModel(
     }
 
     suspend fun loadCategory(): List<Category> {
-        return withContext(Dispatchers.IO){
+        return withContext(Dispatchers.IO) {
             cateRepo.getAllCategories()
         }
     }
 
     suspend fun getCategoriesOfNote(): List<Category> {
-        return withContext(Dispatchers.IO){
+        return withContext(Dispatchers.IO) {
             crossRefRepo.getCategoriesOfNote(_note.value.noteId)
         }
     }
 
-    fun updateNote(wasChecked: Boolean, isNowChecked: Boolean, category: Category){
+    fun updateNote(wasChecked: Boolean, isNowChecked: Boolean, category: Category) {
         if (wasChecked && !isNowChecked) {
             viewModelScope.launch {
-                withContext(Dispatchers.IO){
+                withContext(Dispatchers.IO) {
                     crossRefRepo.deleteNoteFromCategory(_note.value.noteId, category.categoryId)
                 }
             }
         }
         if (!wasChecked && isNowChecked) {
             viewModelScope.launch {
-                withContext(Dispatchers.IO){
+                withContext(Dispatchers.IO) {
                     crossRefRepo.addNoteToCategory(_note.value.noteId, category.categoryId)
                 }
             }
@@ -97,10 +98,8 @@ class EditNoteViewModel(
         val currentNote = _note.value ?: return false
         val titleText = currentNote.title.trim()
         val contentText = currentNote.content.trim()
-        Log.d("savenote","title: $titleText, content: $contentText")
 
         if (titleText.isEmpty() && contentText.isEmpty()) return false
-
 
         val finalNote = currentNote.copy(
             title = titleText.ifEmpty { "Untitled" },
@@ -113,8 +112,8 @@ class EditNoteViewModel(
                 withContext(Dispatchers.IO) {
                     if (finalNote.noteId == 0L) {
                         val noteId = noteRepo.insertNote(finalNote)
-                        if(categoryId>0){
-                            crossRefRepo.addNoteToCategory(noteId,categoryId)
+                        if (categoryId > 0) {
+                            crossRefRepo.addNoteToCategory(noteId, categoryId)
                         }
                     } else {
                         noteRepo.updateNote(finalNote)
@@ -126,20 +125,14 @@ class EditNoteViewModel(
         return true
     }
 
-    fun deleteNote(categoryId: Long){
+    fun deleteNote() {
         val currentNote = _note.value ?: return
         val finalNote = currentNote.copy(onTrash = true)
 
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    if(categoryId<=0) {
-                        noteRepo.updateNote(finalNote)
-                        Log.d("HungDM", "updateNote")
-                    } else {
-                        crossRefRepo.deleteNoteFromCategory(finalNote.noteId, categoryId)
-                        Log.d("HungDM", "deleteNoteFromCategory: noteID: ${finalNote.noteId}, categoryID: $categoryId")
-                    }
+                    noteRepo.updateNote(finalNote)
                 }
             } catch (e: Exception) {
             }

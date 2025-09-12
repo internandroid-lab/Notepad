@@ -9,6 +9,7 @@ import com.example.notepad.db.entity.Note
 import com.example.notepad.repository.NoteRepository
 import com.example.notepad.utils.SortType
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -20,6 +21,12 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
     private val _isSearchMode = MutableLiveData<Boolean>(false)
     val isSearchMode: LiveData<Boolean> = _isSearchMode
 
+    private val _isSelectionMode = MutableLiveData(false)
+    val isSelectionMode: LiveData<Boolean> = _isSelectionMode
+
+    private val _selectedNotes = MutableLiveData<Set<Note>>(emptySet())
+    val selectedNotes: LiveData<Set<Note>> = _selectedNotes
+
     private val _searchQuery = MutableLiveData<String>("")
 
     private var currentSortType = SortType.BY_DATE
@@ -30,6 +37,7 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
 
     fun loadNotes() {
         viewModelScope.launch {
+            delay(500)
             try {
                 val notes = withContext(Dispatchers.IO) {
                     when (currentSortType) {
@@ -41,6 +49,22 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
             } catch (e: Exception) {
             }
         }
+    }
+
+    fun toggleSelection(note: Note) {
+        val current = _selectedNotes.value ?: emptySet()
+        _selectedNotes.value =
+            if (current.contains(note)) current - note else current + note
+    }
+
+    fun startSelection(note: Note) {
+        _isSelectionMode.value = true
+        _selectedNotes.value = setOf(note)
+    }
+
+    fun clearSelection() {
+        _isSelectionMode.value = false
+        _selectedNotes.value = emptySet()
     }
 
     fun searchNotes(query: String) {
@@ -73,13 +97,26 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
         loadNotes()
     }
 
-    fun importNote(note: Note) {
+    fun addNote(note: Note) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 noteRepo.insertNote(note)
             }
         }
         Log.d("Import note",note.toString())
+        loadNotes()
+    }
+
+    fun deleteSelectedNotes(){
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                for(i in _selectedNotes.value){
+                    val finalNote = i.copy(onTrash = true)
+                    noteRepo.updateNote(finalNote)
+                }
+            }
+        }
+        clearSelection()
         loadNotes()
     }
 }

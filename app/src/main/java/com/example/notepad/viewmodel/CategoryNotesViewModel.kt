@@ -30,6 +30,12 @@ class CategoryNotesViewModel(
     private val _isSearchMode = MutableLiveData<Boolean>()
     val isSearchMode: LiveData<Boolean> = _isSearchMode
 
+    private val _isSelectionMode = MutableLiveData(false)
+    val isSelectionMode: LiveData<Boolean> = _isSelectionMode
+
+    private val _selectedNotes = MutableLiveData<Set<Note>>(emptySet())
+    val selectedNotes: LiveData<Set<Note>> = _selectedNotes
+
     private var currentSortType = SortType.BY_DATE
 
     fun loadCategory(categoryId: Long) {
@@ -85,6 +91,35 @@ class CategoryNotesViewModel(
         if (!(_isSearchMode.value ?: false)) {
             loadNotesByCategory()
         }
+    }
+
+    fun toggleSelection(note: Note) {
+        val current = _selectedNotes.value ?: emptySet()
+        _selectedNotes.value =
+            if (current.contains(note)) current - note else current + note
+    }
+
+    fun startSelection(note: Note) {
+        _isSelectionMode.value = true
+        _selectedNotes.value = setOf(note)
+    }
+
+    fun clearSelection() {
+        _isSelectionMode.value = false
+        _selectedNotes.value = emptySet()
+    }
+
+    fun deleteSelectedNotes(){
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                for(i in _selectedNotes.value){
+                    val finalNote = i.copy(onTrash = true)
+                    noteRepo.updateNote(finalNote)
+                }
+            }
+        }
+        clearSelection()
+        loadNotesByCategory()
     }
 
     fun importNote(note: Note) {

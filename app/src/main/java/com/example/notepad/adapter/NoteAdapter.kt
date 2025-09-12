@@ -1,38 +1,54 @@
 package com.example.notepad.adapter
 
+import android.graphics.Color
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.notepad.R
+import com.example.notepad.databinding.ItemNoteBinding
 import com.example.notepad.db.entity.Note
+import androidx.core.graphics.toColorInt
 
-class NoteAdapter(private val onNoteClick: (Note) -> Unit) :
+class NoteAdapter(
+    private val onNoteClick: (Note) -> Unit = {},
+    private val onLongClick: (Note) -> Unit = {},
+    private val isSelected: (Note) -> Boolean = {true}
+) :
     ListAdapter<Note, NoteAdapter.NoteViewHolder>(NoteDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_note, parent, false)
-        return NoteViewHolder(view)
+        val binding = ItemNoteBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+        return NoteViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: NoteViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
 
-    inner class NoteViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val titleTextView: TextView = itemView.findViewById(R.id.tv_note_title)
-        private val lastEditTextView: TextView = itemView.findViewById(R.id.tv_last_edit)
+    inner class NoteViewHolder(private val binding: ItemNoteBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(note: Note) {
-            titleTextView.text = note.title
-            lastEditTextView.text = note.lastEditStr
+            binding.tvNoteTitle.text = note.title
+            binding.tvLastEdit.text = note.lastEditStr
 
-            itemView.setOnClickListener {
+            binding.root.setOnClickListener {
                 onNoteClick(note)
+            }
+
+            if (isSelected(note)) {
+                binding.groupLl.setBackgroundColor("#FFFACD".toColorInt())
+            } else {
+                binding.groupLl.setBackgroundColor(Color.WHITE)
+            }
+
+            binding.root.setOnLongClickListener {
+                onLongClick(note)
+                true
             }
         }
     }

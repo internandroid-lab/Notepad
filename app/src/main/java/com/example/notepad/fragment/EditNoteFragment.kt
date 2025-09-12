@@ -1,5 +1,6 @@
 package com.example.notepad.fragment
 
+import android.R.attr.text
 import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Typeface
@@ -34,6 +35,7 @@ import yuku.ambilwarna.AmbilWarnaDialog
 import androidx.core.graphics.toColorInt
 import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.lifecycleScope
+import com.example.notepad.databinding.DialogSizeBinding
 import com.example.notepad.utils.toSpannable
 import kotlinx.coroutines.launch
 
@@ -76,7 +78,7 @@ class EditNoteFragment : Fragment() {
             findNavController().navigateUp()
         }
 
-        AppUtil.setupKeyboardHiderForAllViews(view)
+//        AppUtil.setupKeyboardHiderForAllViews(view)
 
     }
 
@@ -265,14 +267,10 @@ class EditNoteFragment : Fragment() {
         val popup = PopupMenu(requireContext(), requireActivity().findViewById(R.id.iv_about))
         popup.menuInflater.inflate(R.menu.edit_menu, popup.menu)
 
-        val addToCategoryItem = popup.menu.findItem(R.id.add_to_category)
-
-        addToCategoryItem.isVisible = categoryId <= 0
-
         popup.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.action_delete -> {
-                    viewModel.deleteNote(categoryId)
+                    viewModel.deleteNote()
                     findNavController().navigateUp()
                     true
                 }
@@ -328,33 +326,30 @@ class EditNoteFragment : Fragment() {
     }
 
     private fun showTextSizeDialog(onSizeSelected: (Int) -> Unit) {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_size, null)
-        val seekBar = dialogView.findViewById<SeekBar>(R.id.seekBar)
-        val tvSelectedSize = dialogView.findViewById<TextView>(R.id.tvSelectedSize)
-        val btnSetDefault = dialogView.findViewById<Button>(R.id.btnSetDefault)
+        val dialogBinding = DialogSizeBinding.inflate(layoutInflater)
 
         var selectedSize = viewModel.textStyle.value!!.size
-        seekBar.progress = selectedSize
-        tvSelectedSize.text = "Selected: $selectedSize"
+        dialogBinding.seekBar.progress = selectedSize
+        dialogBinding.tvSelectedSize.text = "Selected: $selectedSize"
 
-        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+        dialogBinding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 selectedSize = progress
-                tvSelectedSize.text = "Selected: $selectedSize"
+                dialogBinding.tvSelectedSize.text = "Selected: $selectedSize"
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
-        btnSetDefault.setOnClickListener {
+        dialogBinding.btnSetDefault.setOnClickListener {
             selectedSize = 20
-            seekBar.progress = 20
-            tvSelectedSize.text = "Selected: $selectedSize"
+            dialogBinding.seekBar.progress = 20
+            dialogBinding.tvSelectedSize.text = "Selected: $selectedSize"
         }
 
         AlertDialog.Builder(requireContext())
-            .setView(dialogView)
+            .setView(binding.root)
             .setPositiveButton("OK") { _, _ ->
                 onSizeSelected(selectedSize)
             }

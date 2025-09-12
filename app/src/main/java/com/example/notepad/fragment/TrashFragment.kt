@@ -7,7 +7,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.addCallback
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.notepad.R
 import com.example.notepad.adapter.NoteAdapter
 import com.example.notepad.databinding.FragmentTrashBinding
 import com.example.notepad.db.entity.Note
@@ -38,13 +40,30 @@ class TrashFragment : Fragment() {
 
         setupRecyclerView()
         setupObservers()
+        setupClickListeners()
         AppUtil.setupKeyboardHiderForAllViews(view)
     }
 
     private fun setupRecyclerView() {
-        noteAdapter = NoteAdapter { note ->
-            showTrashDialog(note)
-        }
+        noteAdapter = NoteAdapter(
+            onNoteClick = { note ->
+                if(viewModel.isSelectionMode.value == true){
+                    viewModel.toggleSelection(note)
+                }else{
+                    showTrashDialog(note)
+                }
+            },
+            onLongClick = { note ->
+                if (viewModel.isSelectionMode.value != true) {
+                    viewModel.startSelection(note)
+                } else {
+                    viewModel.toggleSelection(note)
+                }
+            },
+            isSelected = { note ->
+                viewModel.selectedNotes.value?.contains(note) ?: false
+            }
+        )
         binding.recyclerViewNotes.apply {
             adapter = noteAdapter
             layoutManager = LinearLayoutManager(context)
@@ -54,6 +73,41 @@ class TrashFragment : Fragment() {
     private fun setupObservers() {
         viewModel.notes.observe(viewLifecycleOwner) { notes ->
             noteAdapter.submitList(notes)
+        }
+        viewModel.selectedNotes.observe(viewLifecycleOwner) {
+            noteAdapter.notifyDataSetChanged()
+            binding.tvToolbarTitle.text =  it.size.toString()
+        }
+        viewModel.isSelectionMode.observe(viewLifecycleOwner) { isSelectionMode ->
+            activity?.findViewById<View>(R.id.toolbar)?.visibility =
+                if (isSelectionMode) View.GONE else View.VISIBLE
+            binding.toolbar.visibility = if (isSelectionMode) View.VISIBLE else View.GONE
+        }
+    }
+
+    private fun setupClickListeners() {
+
+        binding.ivBack.setOnClickListener {
+            viewModel.clearSelection()
+        }
+
+        binding.tvDelete.setOnClickListener {
+            Toast.makeText(requireContext(), "${viewModel.selectedNotes.value.size} notes deleted", Toast.LENGTH_SHORT).show()
+            viewModel.deleteSelectedNotes()
+        }
+
+        binding.tvUndelete.setOnClickListener {
+            Toast.makeText(requireContext(), "${viewModel.selectedNotes.value.size} notes restored", Toast.LENGTH_SHORT).show()
+            viewModel.unDeleteSelectedNotes()
+        }
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            if (viewModel.isSelectionMode.value == true) {
+                viewModel.clearSelection()
+            } else {
+                isEnabled = false
+                requireActivity().onBackPressed()
+            }
         }
     }
 

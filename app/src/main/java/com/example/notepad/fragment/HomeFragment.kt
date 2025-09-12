@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import android.widget.Toast
+import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
@@ -29,6 +30,7 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private lateinit var noteAdapter: NoteAdapter
+    private var notesToExport: List<Note> = emptyList()
 
     private val viewModel: HomeViewModel by viewModel()
 
@@ -91,13 +93,32 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
 
 
     private fun setupRecyclerView() {
-        noteAdapter = NoteAdapter { note ->
-            val bundle = bundleOf(
-                "noteId" to note.noteId,
-                "categoryId" to -1L
-            )
-            findNavController().navigate(R.id.action_homeFragment_to_editNoteFragment, bundle)
-        }
+        noteAdapter = NoteAdapter(
+            onNoteClick = { note ->
+                if (viewModel.isSelectionMode.value == true) {
+                    viewModel.toggleSelection(note)
+                } else {
+                    val bundle = bundleOf(
+                        "noteId" to note.noteId,
+                        "categoryId" to -1L
+                    )
+                    findNavController().navigate(
+                        R.id.action_homeFragment_to_editNoteFragment,
+                        bundle
+                    )
+                }
+            },
+            onLongClick = { note ->
+                if (viewModel.isSelectionMode.value != true) {
+                    viewModel.startSelection(note)
+                } else {
+                    viewModel.toggleSelection(note)
+                }
+            },
+            isSelected = { note ->
+                viewModel.selectedNotes.value?.contains(note) ?: false
+            }
+        )
         binding.recyclerViewNotes.apply {
             adapter = noteAdapter
             layoutManager = LinearLayoutManager(context)
@@ -112,6 +133,16 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
         viewModel.isSearchMode.observe(viewLifecycleOwner) { isSearchMode ->
             (activity as? MainActivity)?.showSearchField(isSearchMode)
         }
+        viewModel.selectedNotes.observe(viewLifecycleOwner) {
+            noteAdapter.notifyDataSetChanged()
+            binding.tvToolbarTitle.text = it.size.toString()
+        }
+        viewModel.isSelectionMode.observe(viewLifecycleOwner) { isSelectionMode ->
+            activity?.findViewById<View>(R.id.toolbar)?.visibility =
+                if (isSelectionMode) View.GONE else View.VISIBLE
+            binding.fabAddNote.visibility = if (isSelectionMode) View.GONE else View.VISIBLE
+            binding.toolbar.visibility = if (isSelectionMode) View.VISIBLE else View.GONE
+        }
     }
 
     private fun setupClickListeners() {
@@ -119,7 +150,36 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
             val bundle = bundleOf("noteId" to 0L)
             findNavController().navigate(R.id.action_homeFragment_to_editNoteFragment, bundle)
         }
+
+        binding.ivBack.setOnClickListener {
+            viewModel.clearSelection()
+        }
+
+        binding.tvDelete.setOnClickListener {
+            Toast.makeText(
+                requireContext(),
+                "${viewModel.selectedNotes.value!!.size} notes deleted",
+                Toast.LENGTH_SHORT
+            ).show()
+            viewModel.deleteSelectedNotes()
+        }
+
+        binding.tvExport.setOnClickListener {
+            notesToExport = viewModel.selectedNotes.value!!.toList()
+            exportFolderLauncher.launch(null)
+            viewModel.clearSelection()
+        }
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            if (viewModel.isSelectionMode.value == true) {
+                viewModel.clearSelection()
+            } else {
+                isEnabled = false
+                requireActivity().onBackPressed()
+            }
+        }
     }
+
     private fun showSortDialog() {
         val sortOptions = arrayOf("Sort by Date", "Sort by Title")
 
@@ -144,15 +204,23 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
                     openTextFilePicker()
                     true
                 }
+
                 R.id.action_export -> {
+                    notesToExport = viewModel.notes.value!!
                     exportFolderLauncher.launch(null)
                     true
                 }
+
                 else -> false
             }
         }
 
         popup.show()
+    }
+
+    private fun openTextFilePicker() {
+        val mimeTypes = arrayOf("text/plain")
+        importFileLauncher.launch(mimeTypes)
     }
 
     private val importFileLauncher = registerForActivityResult(
@@ -174,7 +242,7 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
                 content = fileContent,
                 lastEdit = Date()
             )
-            viewModel.importNote(note)
+            viewModel.addNote(note)
 
             Toast.makeText(context, "Imported: $fileName", Toast.LENGTH_SHORT).show()
         } else {
@@ -182,28 +250,23 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
         }
     }
 
-    private fun openTextFilePicker() {
-        val mimeTypes = arrayOf("text/plain")
-        importFileLauncher.launch(mimeTypes)
-    }
-
     private val exportFolderLauncher = registerForActivityResult(
         ActivityResultContracts.OpenDocumentTree()
     ) { uri ->
         if (uri != null) {
             val context = requireContext()
-            val notes = viewModel.notes.value ?: return@registerForActivityResult
 
             context.contentResolver.takePersistableUriPermission(
                 uri,
                 Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
             )
-            AppUtil.exportMultipleNotes(context, notes, uri)
+            AppUtil.exportMultipleNotes(context, notesToExport, uri)
             Toast.makeText(
                 context,
-                "Exported: ${notes.size} file",
+                "Exported: ${notesToExport.size} file",
                 Toast.LENGTH_LONG
             ).show()
+            notesToExport = emptyList()
         } else {
             Toast.makeText(requireContext(), "No folder selected", Toast.LENGTH_SHORT).show()
         }
