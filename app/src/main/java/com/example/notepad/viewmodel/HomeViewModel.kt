@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -32,7 +33,7 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
     private val _searchQuery = MutableStateFlow("")
 
     private val _event = MutableSharedFlow<String>()
-    val event: SharedFlow<String> = _event
+    val event: SharedFlow<String> = _event.asSharedFlow()
 
     private var currentSortType = SortType.BY_DATE
 
@@ -114,6 +115,7 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
 
     fun deleteSelectedNotes(){
         if(_selectedNotes.value.isNotEmpty()){
+            val size = _selectedNotes.value.size
             viewModelScope.launch {
                 withContext(Dispatchers.IO) {
                     for(i in _selectedNotes.value){
@@ -121,7 +123,7 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
                         noteRepo.updateNote(finalNote)
                     }
                 }
-                _event.emit("${_selectedNotes.value.size} notes deleted")
+                _event.emit("$size notes deleted")
             }
             clearSelection()
             loadNotes()

@@ -14,6 +14,7 @@ import com.example.notepad.utils.toBase64
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Date
@@ -25,10 +26,10 @@ class EditNoteViewModel(
 ) : ViewModel() {
 
     private val _note = MutableStateFlow(Note())
-    val note: StateFlow<Note> = _note
+    val note: StateFlow<Note> = _note.asStateFlow()
 
     private val _textStyle = MutableStateFlow(TextStyle())
-    val textStyle: StateFlow<TextStyle> = _textStyle
+    val textStyle: StateFlow<TextStyle> = _textStyle.asStateFlow()
 
 
     fun loadNote(noteId: Long) {

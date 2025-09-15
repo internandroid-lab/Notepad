@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -95,6 +96,13 @@ class TrashFragment : Fragment() {
                     activity?.findViewById<View>(R.id.toolbar)?.visibility =
                         if (isSelectionMode) View.GONE else View.VISIBLE
                     binding.toolbar.visibility = if (isSelectionMode) View.VISIBLE else View.GONE
+                }
+            }
+        }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.event.collect { msg ->
+                    Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
                 }
             }
         }

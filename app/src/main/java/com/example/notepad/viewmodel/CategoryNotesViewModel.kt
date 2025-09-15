@@ -14,6 +14,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -24,22 +26,22 @@ class CategoryNotesViewModel(
 ) : ViewModel() {
 
     private val _notes = MutableStateFlow<List<Note>>(emptyList())
-    val notes: StateFlow<List<Note>> = _notes
+    val notes: StateFlow<List<Note>> = _notes.asStateFlow()
 
     private val _category = MutableStateFlow(Category())
-    val category: StateFlow<Category> = _category
+    val category: StateFlow<Category> = _category.asStateFlow()
 
     private val _isSearchMode = MutableStateFlow(false)
-    val isSearchMode: StateFlow<Boolean> = _isSearchMode
+    val isSearchMode: StateFlow<Boolean> = _isSearchMode.asStateFlow()
 
     private val _isSelectionMode = MutableStateFlow(false)
-    val isSelectionMode: StateFlow<Boolean> = _isSelectionMode
+    val isSelectionMode: StateFlow<Boolean> = _isSelectionMode.asStateFlow()
 
     private val _selectedNotes = MutableStateFlow<Set<Note>>(emptySet())
-    val selectedNotes: StateFlow<Set<Note>> = _selectedNotes
+    val selectedNotes: StateFlow<Set<Note>> = _selectedNotes.asStateFlow()
 
     private val _event = MutableSharedFlow<String>()
-    val event: SharedFlow<String> = _event
+    val event: SharedFlow<String> = _event.asSharedFlow()
 
     private var currentSortType = SortType.BY_DATE
 

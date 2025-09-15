@@ -350,7 +350,7 @@ class EditNoteFragment : Fragment() {
         }
 
         AlertDialog.Builder(requireContext())
-            .setView(binding.root)
+            .setView(dialogBinding.root)
             .setPositiveButton("OK") { _, _ ->
                 onSizeSelected(selectedSize)
             }
