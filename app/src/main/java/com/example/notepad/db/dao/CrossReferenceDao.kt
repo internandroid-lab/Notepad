@@ -60,7 +60,7 @@ interface CrossReferenceDao {
     INNER JOIN note_category_cross_ref AS nc 
         ON categories.categoryId = nc.categoryId
     WHERE nc.noteId = :noteId
-""")
+    """)
     suspend fun getCategoriesOfNote(noteId: Long): List<Category>
 
 }
