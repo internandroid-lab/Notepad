@@ -52,6 +52,10 @@ class EditNoteViewModel(
         }
     }
 
+    fun loadTextStyle(style: TextStyle) {
+        _textStyle.value = style
+    }
+
     suspend fun loadCategory(): List<Category> {
         return withContext(Dispatchers.IO) {
             cateRepo.getAllCategories()

@@ -6,6 +6,7 @@ import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Editable
 import android.text.Spannable
+import android.text.Spanned
 import android.text.TextWatcher
 import android.text.style.AbsoluteSizeSpan
 import android.text.style.BackgroundColorSpan
@@ -34,6 +35,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.notepad.databinding.DialogSizeBinding
+import com.example.notepad.utils.TextStyle
 import com.example.notepad.utils.toSpannable
 import kotlinx.coroutines.launch
 
@@ -113,8 +115,14 @@ class EditNoteFragment : Fragment() {
                                 binding.etContent.setText(spanned)
                                 val safePos = spanned.length.coerceAtMost(binding.etContent.text?.length ?: 0)
                                 binding.etContent.setSelection(safePos)
+
+                                if (spanned.isNotEmpty()) {
+                                    val style = deriveTextStyleFromSpanned(spanned, safePos - 1)
+                                    viewModel.loadTextStyle(style)
+                                }
                             }
                         }
+
                     }
                 }
 
@@ -386,5 +394,30 @@ class EditNoteFragment : Fragment() {
                 .show()
         }
     }
+
+    private fun deriveTextStyleFromSpanned(spanned: Spanned, charIndex: Int): TextStyle {
+        if (spanned.isEmpty()) return TextStyle()
+
+        val pos = charIndex.coerceIn(0, spanned.length - 1)
+        val start = pos
+        val end = pos + 1
+
+        val styleSpans = spanned.getSpans(start, end, StyleSpan::class.java)
+        val isBold = styleSpans.any { it.style == Typeface.BOLD || it.style == Typeface.BOLD_ITALIC }
+        val isItalic = styleSpans.any { it.style == Typeface.ITALIC || it.style == Typeface.BOLD_ITALIC }
+        val isUnderline = spanned.getSpans(start, end, UnderlineSpan::class.java).isNotEmpty()
+
+        val fgSpan = spanned.getSpans(start, end, ForegroundColorSpan::class.java).firstOrNull()
+        val fgColor = fgSpan?.let { (it as ForegroundColorSpan).getForegroundColor() } // Int?
+
+        val bgSpan = spanned.getSpans(start, end, BackgroundColorSpan::class.java).firstOrNull()
+        val bgColor = bgSpan?.let { (it as BackgroundColorSpan).getBackgroundColor() } // Int?
+
+        val sizeSpan = spanned.getSpans(start, end, AbsoluteSizeSpan::class.java).firstOrNull()
+        val size = sizeSpan?.let { (it as AbsoluteSizeSpan).getSize() } ?: viewModel.textStyle.value.size
+
+        return TextStyle(isBold, isItalic, isUnderline, bgColor, fgColor, size)
+    }
+
 
 }
