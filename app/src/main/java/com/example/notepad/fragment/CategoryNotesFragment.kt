@@ -179,7 +179,7 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
 
         binding.tvExport.setOnClickListener {
             notesToExport = viewModel.selectedNotes.value!!.toList()
-            if(notesToExport.isEmpty()){
+            if(notesToExport.isNotEmpty()){
                 exportFolderLauncher.launch(null)
                 viewModel.clearSelection()
             }
