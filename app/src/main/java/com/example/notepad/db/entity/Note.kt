@@ -10,9 +10,9 @@ import java.util.Locale
 @Entity(tableName = "notes")
 data class Note(
     @PrimaryKey(autoGenerate = true) val noteId: Long = 0,
-    val title: String,
-    val content: String,
-    val lastEdit: Date,
+    val title: String = "",
+    val content: String = "",
+    val lastEdit: Date = Date(),
     val onTrash: Boolean = false
 ){
     val lastEditStr: String

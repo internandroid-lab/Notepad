@@ -1,6 +1,5 @@
 package com.example.notepad.fragment
 
-import android.R.attr.text
 import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Typeface
@@ -31,7 +30,9 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import yuku.ambilwarna.AmbilWarnaDialog
 import androidx.core.graphics.toColorInt
 import androidx.core.graphics.drawable.toDrawable
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.notepad.databinding.DialogSizeBinding
 import com.example.notepad.utils.toSpannable
 import kotlinx.coroutines.launch
@@ -69,7 +70,7 @@ class EditNoteFragment : Fragment() {
 
         setupObservers()
         setupClickListeners()
-        viewModel.loadNote(noteId, categoryId)
+        viewModel.loadNote(noteId)
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             findNavController().navigateUp()
@@ -96,38 +97,47 @@ class EditNoteFragment : Fragment() {
     }
 
     private fun setupObservers() {
-        viewModel.note.observe(viewLifecycleOwner) { note ->
-            note?.let {
-                if (!isTitleEditing && binding.etTitle.text.toString() != it.title) {
-                    binding.etTitle.setText(it.title)
-                    val safePos = it.title.length.coerceAtMost(binding.etTitle.text?.length ?: 0)
-                    binding.etTitle.setSelection(safePos)
-                }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.note.collect { note ->
+                    note.let {
+                        if (!isTitleEditing && binding.etTitle.text.toString() != it.title) {
+                            binding.etTitle.setText(it.title)
+                            val safePos = it.title.length.coerceAtMost(binding.etTitle.text?.length ?: 0)
+                            binding.etTitle.setSelection(safePos)
+                        }
 
-                if (!isContentEditing) {
-                    val spanned = it.content.toSpannable()
-                    if (binding.etContent.text.toString() != spanned.toString()) {
-                        binding.etContent.setText(spanned)
-                        val safePos = spanned.length.coerceAtMost(binding.etContent.text?.length ?: 0)
-                        binding.etContent.setSelection(safePos)
+                        if (!isContentEditing) {
+                            val spanned = it.content.toSpannable()
+                            if (binding.etContent.text.toString() != spanned.toString()) {
+                                binding.etContent.setText(spanned)
+                                val safePos = spanned.length.coerceAtMost(binding.etContent.text?.length ?: 0)
+                                binding.etContent.setSelection(safePos)
+                            }
+                        }
                     }
                 }
+
             }
         }
 
-        viewModel.textStyle.observe(viewLifecycleOwner) { textStyle ->
-            binding.btnBold.isSelected = textStyle.isBold
-            binding.btnItalic.isSelected = textStyle.isItalic
-            binding.btnUnderline.isSelected = textStyle.isUnderline
-            if (textStyle.bgColor != null) {
-                binding.btnHighligh.background = textStyle.bgColor.toDrawable()
-            } else {
-                binding.btnHighligh.background = null
-            }
-            if (textStyle.textColor != null) {
-                binding.btnTextColor.background = textStyle.textColor.toDrawable()
-            } else {
-                binding.btnTextColor.background = null
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.textStyle.collect { textStyle ->
+                    binding.btnBold.isSelected = textStyle.isBold
+                    binding.btnItalic.isSelected = textStyle.isItalic
+                    binding.btnUnderline.isSelected = textStyle.isUnderline
+                    if (textStyle.bgColor != null) {
+                        binding.btnHighligh.background = textStyle.bgColor.toDrawable()
+                    } else {
+                        binding.btnHighligh.background = null
+                    }
+                    if (textStyle.textColor != null) {
+                        binding.btnTextColor.background = textStyle.textColor.toDrawable()
+                    } else {
+                        binding.btnTextColor.background = null
+                    }
+                }
             }
         }
     }
@@ -140,7 +150,7 @@ class EditNoteFragment : Fragment() {
         binding.tvSave.setOnClickListener {
             val success = viewModel.saveNote(categoryId)
             if(success){
-                if(viewModel.note.value?.noteId==0L) findNavController().navigateUp()
+                if(viewModel.note.value.noteId==0L) findNavController().navigateUp()
             }
         }
 
@@ -198,7 +208,7 @@ class EditNoteFragment : Fragment() {
                         )
                     }
 
-                    viewModel.textStyle.value?.textColor?.let { color ->
+                    viewModel.textStyle.value.textColor?.let { color ->
                         s.setSpan(
                             ForegroundColorSpan(color),
                             start, end,
@@ -206,7 +216,7 @@ class EditNoteFragment : Fragment() {
                         )
                     }
 
-                    viewModel.textStyle.value?.bgColor?.let { color ->
+                    viewModel.textStyle.value.bgColor?.let { color ->
                         s.setSpan(
                             BackgroundColorSpan(color),
                             start, end,
@@ -214,7 +224,7 @@ class EditNoteFragment : Fragment() {
                         )
                     }
 
-                    viewModel.textStyle.value?.size?.let { size ->
+                    viewModel.textStyle.value.size.let { size ->
                         s.setSpan(
                             AbsoluteSizeSpan(size, true),
                             start, end,
@@ -287,7 +297,7 @@ class EditNoteFragment : Fragment() {
     ) { uri ->
         if (uri != null) {
             val note = viewModel.note.value
-            if (note != null) {
+            if (note.noteId!=0L) {
                 requireContext().contentResolver.takePersistableUriPermission(
                     uri,
                     Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
@@ -319,7 +329,7 @@ class EditNoteFragment : Fragment() {
     private fun showTextSizeDialog(onSizeSelected: (Int) -> Unit) {
         val dialogBinding = DialogSizeBinding.inflate(layoutInflater)
 
-        var selectedSize = viewModel.textStyle.value!!.size
+        var selectedSize = viewModel.textStyle.value.size
         dialogBinding.seekBar.progress = selectedSize
         dialogBinding.tvSelectedSize.text = "Selected: $selectedSize"
 

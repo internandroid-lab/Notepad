@@ -6,8 +6,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.notepad.R
@@ -16,6 +20,7 @@ import com.example.notepad.databinding.FragmentCategoriesBinding
 import com.example.notepad.db.entity.Category
 import com.example.notepad.utils.AppUtil
 import com.example.notepad.viewmodel.CategoriesViewModel
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class CategoriesFragment : Fragment() {
@@ -72,8 +77,20 @@ class CategoriesFragment : Fragment() {
     }
 
     private fun setupObservers() {
-        viewModel.categories.observe(viewLifecycleOwner) { categories ->
-            categoryAdapter.submitList(categories)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.categories.collect {categories ->
+                    categoryAdapter.submitList(categories)
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.event.collect { msg ->
+                    Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 

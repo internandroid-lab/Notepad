@@ -99,7 +99,7 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
     private fun setupRecyclerView() {
         noteAdapter = NoteAdapter(
             onNoteClick = { note ->
-                if (viewModel.isSelectionMode.value == true) {
+                if (viewModel.isSelectionMode.value) {
                     viewModel.toggleSelection(note)
                 } else {
                     val bundle = bundleOf(
@@ -113,14 +113,14 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
                 }
             },
             onLongClick = { note ->
-                if (viewModel.isSelectionMode.value != true) {
+                if (!viewModel.isSelectionMode.value) {
                     viewModel.startSelection(note)
                 } else {
                     viewModel.toggleSelection(note)
                 }
             },
             isSelected = { note ->
-                viewModel.selectedNotes.value?.contains(note) ?: false
+                viewModel.selectedNotes.value.contains(note)
             }
         )
         binding.recyclerViewNotes.apply {
@@ -194,7 +194,7 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
         }
 
         binding.tvExport.setOnClickListener {
-            notesToExport = viewModel.selectedNotes.value!!.toList()
+            notesToExport = viewModel.selectedNotes.value.toList()
             if(notesToExport.isNotEmpty()){
                 exportFolderLauncher.launch(null)
                 viewModel.clearSelection()
@@ -202,7 +202,7 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
         }
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-            if (viewModel.isSelectionMode.value == true) {
+            if (viewModel.isSelectionMode.value) {
                 viewModel.clearSelection()
             } else {
                 isEnabled = false
@@ -237,7 +237,7 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
                 }
 
                 R.id.action_export -> {
-                    notesToExport = viewModel.notes.value!!
+                    notesToExport = viewModel.notes.value
                     exportFolderLauncher.launch(null)
                     true
                 }

@@ -7,10 +7,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
+import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.notepad.MainActivity
@@ -21,6 +25,7 @@ import com.example.notepad.db.entity.Note
 import com.example.notepad.utils.AppUtil
 import com.example.notepad.utils.SortType
 import com.example.notepad.viewmodel.CategoryNotesViewModel
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.Date
 
@@ -95,7 +100,7 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
     private fun setupRecyclerView() {
         noteAdapter = NoteAdapter (
             onNoteClick = { note ->
-                if(viewModel.isSelectionMode.value == true){
+                if(viewModel.isSelectionMode.value){
                     viewModel.toggleSelection(note)
                 }else{
                     val categoryId = arguments?.getLong("categoryId")
@@ -110,14 +115,14 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
                 }
             },
             onLongClick = { note ->
-                if (viewModel.isSelectionMode.value != true) {
+                if (!viewModel.isSelectionMode.value) {
                     viewModel.startSelection(note)
                 } else {
                     viewModel.toggleSelection(note)
                 }
             },
             isSelected = { note ->
-                viewModel.selectedNotes.value?.contains(note) ?: false
+                viewModel.selectedNotes.value.contains(note)
             }
         )
         binding.rvNotes.apply {
@@ -127,28 +132,56 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
     }
 
     private fun setupObservers() {
-        viewModel.notes.observe(viewLifecycleOwner) { notes ->
-            noteAdapter.submitList(notes)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.notes.collect  { notes ->
+                    noteAdapter.submitList(notes)
+                }
+            }
         }
 
-        viewModel.category.observe(viewLifecycleOwner) { category ->
-            (activity as? MainActivity)?.updateToolbarTitle("Notepad\n${category.name}")
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.category.collect { category ->
+                    (activity as? MainActivity)?.updateToolbarTitle("Notepad\n${category.name}")
+                }
+            }
         }
 
-        viewModel.isSearchMode.observe(viewLifecycleOwner) { isSearchMode ->
-            (activity as? MainActivity)?.showSearchField(isSearchMode)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.isSearchMode.collect { isSearchMode ->
+                    (activity as? MainActivity)?.showSearchField(isSearchMode)
+                }
+            }
         }
 
-        viewModel.selectedNotes.observe(viewLifecycleOwner) {
-            noteAdapter.notifyDataSetChanged()
-            binding.tvToolbarTitle.text =  it.size.toString()
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.selectedNotes.collect {
+                    noteAdapter.notifyDataSetChanged()
+                    binding.tvToolbarTitle.text =  it.size.toString()
+                }
+            }
         }
 
-        viewModel.isSelectionMode.observe(viewLifecycleOwner) { isSelectionMode ->
-            activity?.findViewById<View>(R.id.toolbar)?.visibility =
-                if (isSelectionMode) View.GONE else View.VISIBLE
-            binding.fabAddNote.visibility = if (isSelectionMode) View.GONE else View.VISIBLE
-            binding.toolbar.visibility = if (isSelectionMode) View.VISIBLE else View.GONE
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.isSelectionMode.collect { isSelectionMode ->
+                    activity?.findViewById<View>(R.id.toolbar)?.visibility =
+                        if (isSelectionMode) View.GONE else View.VISIBLE
+                    binding.fabAddNote.visibility = if (isSelectionMode) View.GONE else View.VISIBLE
+                    binding.toolbar.visibility = if (isSelectionMode) View.VISIBLE else View.GONE
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.event.collect { msg ->
+                    Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 
@@ -178,7 +211,7 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
         }
 
         binding.tvExport.setOnClickListener {
-            notesToExport = viewModel.selectedNotes.value!!.toList()
+            notesToExport = viewModel.selectedNotes.value.toList()
             if(notesToExport.isNotEmpty()){
                 exportFolderLauncher.launch(null)
                 viewModel.clearSelection()
@@ -186,7 +219,7 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
         }
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-            if (viewModel.isSelectionMode.value == true) {
+            if (viewModel.isSelectionMode.value) {
                 viewModel.clearSelection()
             } else {
                 isEnabled = false
@@ -220,7 +253,7 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
                     true
                 }
                 R.id.action_export -> {
-                    notesToExport = viewModel.notes.value!!
+                    notesToExport = viewModel.notes.value
                     exportFolderLauncher.launch(null)
                     true
                 }

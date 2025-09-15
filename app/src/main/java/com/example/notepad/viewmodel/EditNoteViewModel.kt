@@ -2,10 +2,6 @@ package com.example.notepad.viewmodel
 
 import android.text.Editable
 import android.text.Spannable
-import android.util.Log
-import android.util.Log.e
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.notepad.db.entity.Category
@@ -16,6 +12,8 @@ import com.example.notepad.repository.NoteRepository
 import com.example.notepad.utils.TextStyle
 import com.example.notepad.utils.toBase64
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Date
@@ -26,14 +24,14 @@ class EditNoteViewModel(
     private val crossRefRepo: CrossReferenceRepository
 ) : ViewModel() {
 
-    private val _note = MutableLiveData<Note>()
-    val note: LiveData<Note?> = _note
+    private val _note = MutableStateFlow(Note())
+    val note: StateFlow<Note> = _note
 
-    private val _textStyle = MutableLiveData<TextStyle>(TextStyle())
-    val textStyle: LiveData<TextStyle> = _textStyle
+    private val _textStyle = MutableStateFlow(TextStyle())
+    val textStyle: StateFlow<TextStyle> = _textStyle
 
 
-    fun loadNote(noteId: Long, categoryId: Long? = null) {
+    fun loadNote(noteId: Long) {
         if (noteId > 0) {
             viewModelScope.launch {
                 try {
@@ -42,7 +40,6 @@ class EditNoteViewModel(
                     }
                     _note.value = note!!
                 } catch (e: Exception) {
-                    e.printStackTrace()
                 }
             }
         } else {
@@ -52,7 +49,6 @@ class EditNoteViewModel(
                 lastEdit = Date()
             )
         }
-        Log.d("HungDM", "EditNoteViewModel loadNote: categoryId: $categoryId")
     }
 
     suspend fun loadCategory(): List<Category> {
@@ -85,17 +81,17 @@ class EditNoteViewModel(
     }
 
     fun updateTitle(newTitle: String) {
-        _note.value = _note.value?.copy(title = newTitle)
+        _note.value = _note.value.copy(title = newTitle)
     }
 
     fun updateContent(spannable: Editable) {
         val encodedContent = (spannable as Spannable).toBase64()
-        _note.value = _note.value?.copy(content = encodedContent)
+        _note.value = _note.value.copy(content = encodedContent)
 
     }
 
     fun saveNote(categoryId: Long): Boolean {
-        val currentNote = _note.value ?: return false
+        val currentNote = _note.value
         val titleText = currentNote.title.trim()
         val contentText = currentNote.content.trim()
 
@@ -126,7 +122,7 @@ class EditNoteViewModel(
     }
 
     fun deleteNote() {
-        val currentNote = _note.value ?: return
+        val currentNote = _note.value
         val finalNote = currentNote.copy(onTrash = true)
 
         viewModelScope.launch {
@@ -140,26 +136,26 @@ class EditNoteViewModel(
     }
 
     fun updateBold() {
-        _textStyle.value = _textStyle.value?.copy(isBold = !_textStyle.value!!.isBold)
+        _textStyle.value = _textStyle.value.copy(isBold = !_textStyle.value.isBold)
     }
 
     fun updateItalic() {
-        _textStyle.value = _textStyle.value?.copy(isItalic = !_textStyle.value!!.isItalic)
+        _textStyle.value = _textStyle.value.copy(isItalic = !_textStyle.value.isItalic)
     }
 
     fun updateUnderline() {
-        _textStyle.value = _textStyle.value?.copy(isUnderline = !_textStyle.value!!.isUnderline)
+        _textStyle.value = _textStyle.value.copy(isUnderline = !_textStyle.value.isUnderline)
     }
 
     fun updateBackgroundColor(color: Int?) {
-        _textStyle.value = _textStyle.value?.copy(bgColor = color)
+        _textStyle.value = _textStyle.value.copy(bgColor = color)
     }
 
     fun updateTextColor(color: Int?) {
-        _textStyle.value = _textStyle.value?.copy(textColor = color)
+        _textStyle.value = _textStyle.value.copy(textColor = color)
     }
 
     fun updateTextSize(size: Int) {
-        _textStyle.value = _textStyle.value?.copy(size = size)
+        _textStyle.value = _textStyle.value.copy(size = size)
     }
 }

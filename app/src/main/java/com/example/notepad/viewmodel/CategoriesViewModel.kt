@@ -1,19 +1,24 @@
 package com.example.notepad.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.notepad.db.entity.Category
 import com.example.notepad.repository.CategoryRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class CategoriesViewModel(private val cateRepo: CategoryRepository) : ViewModel() {
 
-    private val _categories = MutableLiveData<List<Category>>()
-    val categories: LiveData<List<Category>> = _categories
+    private val _categories = MutableStateFlow<List<Category>>(emptyList())
+    val categories: StateFlow<List<Category>> = _categories
+
+    private val _event = MutableSharedFlow<String>()
+    val event: SharedFlow<String> = _event
 
     init {
         loadCategories()
@@ -29,6 +34,7 @@ class CategoriesViewModel(private val cateRepo: CategoryRepository) : ViewModel(
                     cateRepo.insertCategory(category)
                 }
                 loadCategories()
+                _event.emit("Category added")
             } catch (e: Exception) {
             }
         }
@@ -41,6 +47,7 @@ class CategoriesViewModel(private val cateRepo: CategoryRepository) : ViewModel(
                     cateRepo.updateCategory(category)
                 }
                 loadCategories()
+                _event.emit("Category updated name")
             } catch (e: Exception) {
             }
         }
@@ -53,6 +60,7 @@ class CategoriesViewModel(private val cateRepo: CategoryRepository) : ViewModel(
                     cateRepo.deleteCategory(category)
                 }
                 loadCategories()
+                _event.emit("Category deleted")
             } catch (e: Exception) {
             }
         }

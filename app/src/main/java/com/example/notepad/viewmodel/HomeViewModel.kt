@@ -57,7 +57,7 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
     }
 
     fun toggleSelection(note: Note) {
-        val current = _selectedNotes.value ?: emptySet()
+        val current = _selectedNotes.value
         _selectedNotes.value =
             if (current.contains(note)) current - note else current + note
     }
@@ -90,8 +90,8 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
     }
 
     fun toggleSearchMode() {
-        _isSearchMode.value = !(_isSearchMode.value ?: false)
-        if (!(_isSearchMode.value ?: false)) {
+        _isSearchMode.value = !_isSearchMode.value
+        if (!_isSearchMode.value) {
             _searchQuery.value = ""
             loadNotes()
         }
