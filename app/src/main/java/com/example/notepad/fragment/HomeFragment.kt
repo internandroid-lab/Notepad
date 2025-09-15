@@ -7,10 +7,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
+import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.notepad.MainActivity
@@ -21,6 +25,7 @@ import com.example.notepad.db.entity.Note
 import com.example.notepad.utils.AppUtil
 import com.example.notepad.utils.SortType
 import com.example.notepad.viewmodel.HomeViewModel
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.Date
 
@@ -125,22 +130,48 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
     }
 
     private fun setupObservers() {
-        viewModel.notes.observe(viewLifecycleOwner) { notes ->
-            noteAdapter.submitList(notes)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.notes.collect { notes ->
+                    noteAdapter.submitList(notes)
+                }
+            }
         }
 
-        viewModel.isSearchMode.observe(viewLifecycleOwner) { isSearchMode ->
-            (activity as? MainActivity)?.showSearchField(isSearchMode)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.isSearchMode.collect { isSearchMode ->
+                    (activity as? MainActivity)?.showSearchField(isSearchMode)
+                }
+            }
         }
-        viewModel.selectedNotes.observe(viewLifecycleOwner) {
-            noteAdapter.notifyDataSetChanged()
-            binding.tvToolbarTitle.text = it.size.toString()
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.selectedNotes.collect {
+                    noteAdapter.notifyDataSetChanged()
+                    binding.tvToolbarTitle.text = it.size.toString()
+                }
+            }
         }
-        viewModel.isSelectionMode.observe(viewLifecycleOwner) { isSelectionMode ->
-            activity?.findViewById<View>(R.id.toolbar)?.visibility =
-                if (isSelectionMode) View.GONE else View.VISIBLE
-            binding.fabAddNote.visibility = if (isSelectionMode) View.GONE else View.VISIBLE
-            binding.toolbar.visibility = if (isSelectionMode) View.VISIBLE else View.GONE
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.isSelectionMode.collect { isSelectionMode ->
+                    activity?.findViewById<View>(R.id.toolbar)?.visibility =
+                        if (isSelectionMode) View.GONE else View.VISIBLE
+                    binding.fabAddNote.visibility = if (isSelectionMode) View.GONE else View.VISIBLE
+                    binding.toolbar.visibility = if (isSelectionMode) View.VISIBLE else View.GONE
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.event.collect { msg ->
+                    Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 
@@ -242,7 +273,7 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
                 content = fileContent,
                 lastEdit = Date()
             )
-            viewModel.addNote(note)
+            viewModel.importNote(note)
         }
     }
 

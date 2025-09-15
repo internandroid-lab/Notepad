@@ -1,7 +1,5 @@
 package com.example.notepad.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.notepad.db.entity.Note
@@ -9,24 +7,32 @@ import com.example.notepad.repository.NoteRepository
 import com.example.notepad.utils.SortType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
 
-    private val _notes = MutableLiveData<List<Note>>()
-    val notes: LiveData<List<Note>> = _notes
+    private val _notes = MutableStateFlow<List<Note>>(emptyList())
+    val notes: StateFlow<List<Note>> = _notes.asStateFlow()
 
-    private val _isSearchMode = MutableLiveData<Boolean>(false)
-    val isSearchMode: LiveData<Boolean> = _isSearchMode
+    private val _isSearchMode = MutableStateFlow(false)
+    val isSearchMode: StateFlow<Boolean> = _isSearchMode.asStateFlow()
 
-    private val _isSelectionMode = MutableLiveData(false)
-    val isSelectionMode: LiveData<Boolean> = _isSelectionMode
+    private val _isSelectionMode = MutableStateFlow(false)
+    val isSelectionMode: StateFlow<Boolean> = _isSelectionMode.asStateFlow()
 
-    private val _selectedNotes = MutableLiveData<Set<Note>>(emptySet())
-    val selectedNotes: LiveData<Set<Note>> = _selectedNotes
+    private val _selectedNotes = MutableStateFlow<Set<Note>>(emptySet())
+    val selectedNotes: StateFlow<Set<Note>> = _selectedNotes.asStateFlow()
 
-    private val _searchQuery = MutableLiveData<String>("")
+    private val _searchQuery = MutableStateFlow("")
+
+    private val _event = MutableSharedFlow<String>()
+    val event: SharedFlow<String> = _event
 
     private var currentSortType = SortType.BY_DATE
 
@@ -96,11 +102,12 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
         loadNotes()
     }
 
-    fun addNote(note: Note) {
+    fun importNote(note: Note) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 noteRepo.insertNote(note)
             }
+            _event.emit("1 note imported")
         }
         loadNotes()
     }
@@ -114,6 +121,7 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
                         noteRepo.updateNote(finalNote)
                     }
                 }
+                _event.emit("${_selectedNotes.value.size} notes deleted")
             }
             clearSelection()
             loadNotes()
@@ -122,7 +130,7 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
 
     fun selectAll(){
         if (_notes.value.toSet() != _selectedNotes.value){
-            _selectedNotes.value = _notes.value?.toSet()
+            _selectedNotes.value = _notes.value.toSet()
         }else{
             _selectedNotes.value = emptySet()
         }
