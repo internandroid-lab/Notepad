@@ -6,7 +6,6 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.notepad.R
@@ -91,13 +90,15 @@ class TrashFragment : Fragment() {
             viewModel.clearSelection()
         }
 
+        binding.ivSelect.setOnClickListener {
+            viewModel.selectAll()
+        }
+
         binding.tvDelete.setOnClickListener {
-            Toast.makeText(requireContext(), "${viewModel.selectedNotes.value.size} notes deleted", Toast.LENGTH_SHORT).show()
             viewModel.deleteSelectedNotes()
         }
 
         binding.tvUndelete.setOnClickListener {
-            Toast.makeText(requireContext(), "${viewModel.selectedNotes.value.size} notes restored", Toast.LENGTH_SHORT).show()
             viewModel.unDeleteSelectedNotes()
         }
 
@@ -116,12 +117,10 @@ class TrashFragment : Fragment() {
             .setTitle("Delete Note")
             .setPositiveButton("Delete") { _, _ ->
                 viewModel.deleteNote(note)
-                Toast.makeText(context, "Delete success", Toast.LENGTH_SHORT).show()
             }
             .setNeutralButton("Undelete") { _, _ ->
                 val finalNote = note.copy(onTrash = false)
                 viewModel.updateNote(finalNote)
-                Toast.makeText(context, "Undelete success", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Cancel", null)
             .show()

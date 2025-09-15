@@ -66,28 +66,40 @@ class TrashViewModel(private val noteRepo: NoteRepository): ViewModel() {
     }
 
     fun deleteSelectedNotes(){
-        viewModelScope.launch {
-            withContext(Dispatchers.IO){
-                for(i in _selectedNotes.value){
-                    noteRepo.deleteNote(i)
+        if(_selectedNotes.value.isNotEmpty()){
+            viewModelScope.launch {
+                withContext(Dispatchers.IO){
+                    for(i in _selectedNotes.value){
+                        noteRepo.deleteNote(i)
+                    }
                 }
             }
+            clearSelection()
+            loadTrashNotes()
         }
-        clearSelection()
-        loadTrashNotes()
     }
 
     fun unDeleteSelectedNotes(){
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                for(i in _selectedNotes.value){
-                    val finalNote = i.copy(onTrash = false)
-                    noteRepo.updateNote(finalNote)
+        if(_selectedNotes.value.isNotEmpty()){
+            viewModelScope.launch {
+                withContext(Dispatchers.IO) {
+                    for(i in _selectedNotes.value){
+                        val finalNote = i.copy(onTrash = false)
+                        noteRepo.updateNote(finalNote)
+                    }
                 }
             }
+            clearSelection()
+            loadTrashNotes()
         }
-        clearSelection()
-        loadTrashNotes()
+    }
+
+    fun selectAll(){
+        if (_notes.value.toSet() != _selectedNotes.value){
+            _selectedNotes.value = _notes.value?.toSet()
+        }else{
+            _selectedNotes.value = emptySet()
+        }
     }
 
     private fun loadTrashNotes() {

@@ -12,6 +12,7 @@ import com.example.notepad.repository.CrossReferenceRepository
 import com.example.notepad.repository.NoteRepository
 import com.example.notepad.utils.SortType
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -51,6 +52,7 @@ class CategoryNotesViewModel(
 
     fun loadNotesByCategory() {
         viewModelScope.launch {
+            delay(500)
             try {
                 val notes= withContext(Dispatchers.IO){
                     when (currentSortType) {
@@ -110,16 +112,26 @@ class CategoryNotesViewModel(
     }
 
     fun deleteSelectedNotes(){
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                for(i in _selectedNotes.value){
-                    val finalNote = i.copy(onTrash = true)
-                    noteRepo.updateNote(finalNote)
+        if(_selectedNotes.value.isNotEmpty()){
+            viewModelScope.launch {
+                withContext(Dispatchers.IO) {
+                    for(i in _selectedNotes.value){
+                        val finalNote = i.copy(onTrash = true)
+                        noteRepo.updateNote(finalNote)
+                    }
                 }
             }
+            clearSelection()
+            loadNotesByCategory()
         }
-        clearSelection()
-        loadNotesByCategory()
+    }
+
+    fun selectAll(){
+        if (_notes.value.toSet() != _selectedNotes.value){
+            _selectedNotes.value = _notes.value?.toSet()
+        }else{
+            _selectedNotes.value = emptySet()
+        }
     }
 
     fun importNote(note: Note) {

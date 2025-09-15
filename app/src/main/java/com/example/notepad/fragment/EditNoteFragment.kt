@@ -16,11 +16,8 @@ import android.text.style.UnderlineSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.PopupMenu
 import android.widget.SeekBar
-import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.widget.addTextChangedListener
@@ -143,10 +140,7 @@ class EditNoteFragment : Fragment() {
         binding.tvSave.setOnClickListener {
             val success = viewModel.saveNote(categoryId)
             if(success){
-                Toast.makeText(context, context?.getString(R.string.save_successfully), Toast.LENGTH_SHORT).show()
                 if(viewModel.note.value?.noteId==0L) findNavController().navigateUp()
-            } else {
-                Toast.makeText(context, context?.getString(R.string.save_failed), Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -300,10 +294,7 @@ class EditNoteFragment : Fragment() {
                 )
 
                 AppUtil.exportNote(requireContext(), note, uri)
-                Toast.makeText(requireContext(), "Exported: ${note.title}", Toast.LENGTH_SHORT).show()
             }
-        } else {
-            Toast.makeText(requireContext(), "No folder selected", Toast.LENGTH_SHORT).show()
         }
     }
 

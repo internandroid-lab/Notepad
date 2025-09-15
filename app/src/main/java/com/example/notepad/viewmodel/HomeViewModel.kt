@@ -1,6 +1,5 @@
 package com.example.notepad.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -103,20 +102,29 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
                 noteRepo.insertNote(note)
             }
         }
-        Log.d("Import note",note.toString())
         loadNotes()
     }
 
     fun deleteSelectedNotes(){
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                for(i in _selectedNotes.value){
-                    val finalNote = i.copy(onTrash = true)
-                    noteRepo.updateNote(finalNote)
+        if(_selectedNotes.value.isNotEmpty()){
+            viewModelScope.launch {
+                withContext(Dispatchers.IO) {
+                    for(i in _selectedNotes.value){
+                        val finalNote = i.copy(onTrash = true)
+                        noteRepo.updateNote(finalNote)
+                    }
                 }
             }
+            clearSelection()
+            loadNotes()
         }
-        clearSelection()
-        loadNotes()
+    }
+
+    fun selectAll(){
+        if (_notes.value.toSet() != _selectedNotes.value){
+            _selectedNotes.value = _notes.value?.toSet()
+        }else{
+            _selectedNotes.value = emptySet()
+        }
     }
 }

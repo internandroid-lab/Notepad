@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
-import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
@@ -155,19 +154,20 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
             viewModel.clearSelection()
         }
 
+        binding.ivSelect.setOnClickListener {
+            viewModel.selectAll()
+        }
+
         binding.tvDelete.setOnClickListener {
-            Toast.makeText(
-                requireContext(),
-                "${viewModel.selectedNotes.value!!.size} notes deleted",
-                Toast.LENGTH_SHORT
-            ).show()
             viewModel.deleteSelectedNotes()
         }
 
         binding.tvExport.setOnClickListener {
             notesToExport = viewModel.selectedNotes.value!!.toList()
-            exportFolderLauncher.launch(null)
-            viewModel.clearSelection()
+            if(notesToExport.isEmpty()){
+                exportFolderLauncher.launch(null)
+                viewModel.clearSelection()
+            }
         }
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
@@ -243,10 +243,6 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
                 lastEdit = Date()
             )
             viewModel.addNote(note)
-
-            Toast.makeText(context, "Imported: $fileName", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(requireContext(), "No file selected", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -261,14 +257,7 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
                 Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
             )
             AppUtil.exportMultipleNotes(context, notesToExport, uri)
-            Toast.makeText(
-                context,
-                "Exported: ${notesToExport.size} file",
-                Toast.LENGTH_LONG
-            ).show()
             notesToExport = emptyList()
-        } else {
-            Toast.makeText(requireContext(), "No folder selected", Toast.LENGTH_SHORT).show()
         }
     }
 }

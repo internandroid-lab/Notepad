@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
-import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -84,8 +83,6 @@ class CategoriesFragment : Fragment() {
             if (categoryName.isNotBlank()) {
                 viewModel.addCategory(categoryName)
                 binding.etCategoryName.text.clear()
-            } else {
-                Toast.makeText(context, "Please enter category name", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -104,9 +101,6 @@ class CategoriesFragment : Fragment() {
                 if (newName.isNotBlank()) {
                     val updatedCategory = category.copy(name = newName)
                     viewModel.updateCategory(updatedCategory)
-                } else {
-                    Toast.makeText(context, "Category name cannot be empty", Toast.LENGTH_SHORT)
-                        .show()
                 }
             }
             .setNegativeButton("Cancel", null)
@@ -118,7 +112,6 @@ class CategoriesFragment : Fragment() {
             .setTitle("Delete Category")
             .setPositiveButton("Delete") { _, _ ->
                 viewModel.deleteCategory(category)
-                Toast.makeText(context, "Delete success", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Cancel", null)
             .show()
