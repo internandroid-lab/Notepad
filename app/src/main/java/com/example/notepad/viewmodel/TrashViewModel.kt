@@ -98,7 +98,7 @@ class TrashViewModel(private val noteRepo: NoteRepository) : ViewModel() {
 
     private fun loadTrashNotes() {
         viewModelScope.launch {
-            delay(500)
+//            delay(500)
             val notes = noteRepo.getAllTrashedNotes()
             _notes.value = notes
         }

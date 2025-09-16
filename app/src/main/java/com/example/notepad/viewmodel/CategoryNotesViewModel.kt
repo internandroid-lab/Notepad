@@ -57,7 +57,7 @@ class CategoryNotesViewModel(
 
     fun loadNotesByCategory() {
         viewModelScope.launch {
-            delay(500)
+//            delay(500)
             val notes = when (currentSortType) {
                 SortType.BY_DATE -> crossRefRepo.getAllNotesInCategorySortedByDate(_category.value.categoryId)
                 SortType.BY_TITLE -> crossRefRepo.getAllNotesInCategorySortedByTitle(

@@ -41,7 +41,7 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
 
     fun loadNotes() {
         viewModelScope.launch {
-            delay(500)
+//            delay(500)
             val notes = when (currentSortType) {
                 SortType.BY_DATE -> noteRepo.getAllNotesSortedByDate()
                 SortType.BY_TITLE -> noteRepo.getAllNotesSortedByTitle()
