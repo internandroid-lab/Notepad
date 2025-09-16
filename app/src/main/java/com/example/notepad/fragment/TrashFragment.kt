@@ -51,21 +51,21 @@ class TrashFragment : Fragment() {
     private fun setupRecyclerView() {
         noteAdapter = NoteAdapter(
             onNoteClick = { note ->
-                if(viewModel.isSelectionMode.value == true){
+                if(viewModel.isSelectionMode.value){
                     viewModel.toggleSelection(note)
                 }else{
                     showTrashDialog(note)
                 }
             },
             onLongClick = { note ->
-                if (viewModel.isSelectionMode.value != true) {
+                if (!viewModel.isSelectionMode.value) {
                     viewModel.startSelection(note)
                 } else {
                     viewModel.toggleSelection(note)
                 }
             },
             isSelected = { note ->
-                viewModel.selectedNotes.value?.contains(note) ?: false
+                viewModel.selectedNotes.value.contains(note)
             }
         )
         binding.recyclerViewNotes.apply {
@@ -123,7 +123,7 @@ class TrashFragment : Fragment() {
         }
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-            if (viewModel.isSelectionMode.value == true) {
+            if (viewModel.isSelectionMode.value) {
                 viewModel.clearSelection()
             } else {
                 isEnabled = false

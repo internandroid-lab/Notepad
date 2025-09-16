@@ -4,6 +4,7 @@ import com.example.notepad.db.dao.CrossReferenceDao
 import com.example.notepad.db.entity.Note
 import com.example.notepad.db.dao.NoteDao
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
 class NoteRepository(private val noteDao: NoteDao, private val crossRef: CrossReferenceDao) {
@@ -11,22 +12,18 @@ class NoteRepository(private val noteDao: NoteDao, private val crossRef: CrossRe
     suspend fun insertNote(note: Note): Long =
         withContext(Dispatchers.IO) { noteDao.insertNote(note) }
 
-    suspend fun getAllNotesSortedByDate(): List<Note> =
-        withContext(Dispatchers.IO) { noteDao.getAllNotesSortedByDate() }
+    fun getAllNotesSortedByDate(): Flow<List<Note>> = noteDao.getAllNotesSortedByDate()
 
-    suspend fun getAllNotesSortedByTitle(): List<Note> =
-        withContext(Dispatchers.IO) { noteDao.getAllNotesSortedByTitle() }
+    fun getAllNotesSortedByTitle(): Flow<List<Note>> = noteDao.getAllNotesSortedByTitle()
 
     suspend fun getNoteById(noteId: Long): Note? =
         withContext(Dispatchers.IO) { noteDao.getNoteById(noteId) }
 
-    suspend fun getAllTrashedNotes(): List<Note> =
-        withContext(Dispatchers.IO) { noteDao.getAllTrashedNotes() }
+    fun getAllTrashedNotes(): Flow<List<Note>> = noteDao.getAllTrashedNotes()
 
     suspend fun updateNote(note: Note) = withContext(Dispatchers.IO) { noteDao.updateNote(note) }
 
-    suspend fun searchNotes(query: String): List<Note> =
-        withContext(Dispatchers.IO) { noteDao.searchNotes(query) }
+    fun searchNotes(query: String): Flow<List<Note>> = noteDao.searchNotes(query)
 
     suspend fun deleteNote(note: Note) =
         withContext(Dispatchers.IO) {

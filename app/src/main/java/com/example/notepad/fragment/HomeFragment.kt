@@ -3,7 +3,6 @@ package com.example.notepad.fragment
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,7 +25,6 @@ import com.example.notepad.db.entity.Note
 import com.example.notepad.utils.AppUtil
 import com.example.notepad.utils.SortType
 import com.example.notepad.viewmodel.HomeViewModel
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.Date
@@ -63,7 +61,6 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
 
     override fun onResume() {
         super.onResume()
-        viewModel.loadNotes()
         (activity as? MainActivity)?.setToolbarController(this)
     }
 

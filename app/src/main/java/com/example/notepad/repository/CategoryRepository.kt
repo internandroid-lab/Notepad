@@ -4,6 +4,7 @@ import com.example.notepad.db.dao.CategoryDao
 import com.example.notepad.db.dao.CrossReferenceDao
 import com.example.notepad.db.entity.Category
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
 class CategoryRepository(
@@ -14,8 +15,10 @@ class CategoryRepository(
     suspend fun insertCategory(category: Category): Long =
         withContext(Dispatchers.IO) { categoryDao.insertCategory(category) }
 
-    suspend fun getAllCategories(): List<Category> =
-        withContext(Dispatchers.IO) { categoryDao.getAllCategories() }
+    fun getAllCategories(): Flow<List<Category>> = categoryDao.getAllCategories()
+
+    suspend fun getAll(): List<Category> =
+        withContext(Dispatchers.IO) { categoryDao.getAll() }
 
     suspend fun getCategoryById(categoryId: Long): Category? =
         withContext(Dispatchers.IO) { categoryDao.getCategoryById(categoryId) }

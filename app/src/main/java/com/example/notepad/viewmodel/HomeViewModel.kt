@@ -9,16 +9,16 @@ import com.example.notepad.utils.SortType
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
-
-    private val _notes = MutableStateFlow<List<Note>>(emptyList())
-    val notes: StateFlow<List<Note>> = _notes.asStateFlow()
-
     private val _isSearchMode = MutableStateFlow(false)
     val isSearchMode: StateFlow<Boolean> = _isSearchMode.asStateFlow()
 
@@ -33,22 +33,21 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
     private val _event = MutableSharedFlow<String>()
     val event: SharedFlow<String> = _event.asSharedFlow()
 
-    private var currentSortType = SortType.BY_DATE
+    private val _currentSortType = MutableStateFlow(SortType.BY_DATE)
 
-    init {
-        loadNotes()
-    }
-
-    fun loadNotes() {
-        viewModelScope.launch {
-//            delay(500)
-            val notes = when (currentSortType) {
-                SortType.BY_DATE -> noteRepo.getAllNotesSortedByDate()
-                SortType.BY_TITLE -> noteRepo.getAllNotesSortedByTitle()
+    val notes: StateFlow<List<Note>> =
+        combine(_searchQuery,_currentSortType){ query, sortType ->
+            if(query.isNotBlank()){
+                when(sortType){
+                    SortType.BY_DATE -> noteRepo.getAllNotesSortedByDate()
+                    SortType.BY_TITLE -> noteRepo.getAllNotesSortedByTitle()
+                }
+            } else {
+                noteRepo.searchNotes(query)
             }
-            _notes.value = notes
         }
-    }
+        .flatMapLatest { it }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
     fun toggleSelection(note: Note) {
         val current = _selectedNotes.value
@@ -68,34 +67,23 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
 
     fun searchNotes(query: String) {
         _searchQuery.value = query
-        if (query.isEmpty()) {
-            loadNotes()
-        } else {
-            viewModelScope.launch {
-                val notes = noteRepo.searchNotes(query)
-                _notes.value = notes
-            }
-        }
     }
 
     fun toggleSearchMode() {
         _isSearchMode.value = !_isSearchMode.value
         if (!_isSearchMode.value) {
             _searchQuery.value = ""
-            loadNotes()
         }
     }
 
     fun sortNotes(sortType: SortType) {
-        currentSortType = sortType
-        loadNotes()
+        _currentSortType.value = sortType
     }
 
     fun importNote(note: Note) {
         viewModelScope.launch {
             noteRepo.insertNote(note)
             _event.emit("1 note imported")
-            loadNotes()
         }
     }
 
@@ -110,17 +98,17 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
                 Log.d("MTHAI", "deleteSelectedNotes: 2")
 
                 _event.emit("${_selectedNotes.value.size} notes deleted")
-                loadNotes()
                 clearSelection()
             }
         }
     }
 
     fun selectAll() {
-        if (_notes.value.toSet() != _selectedNotes.value) {
-            _selectedNotes.value = _notes.value.toSet()
-        } else {
-            _selectedNotes.value = emptySet()
-        }
+        _selectedNotes.value =
+            if (notes.value.toSet() != _selectedNotes.value) {
+                notes.value.toSet()
+            } else {
+                emptySet()
+            }
     }
 }

@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.util.Date
 
 class EditNoteViewModel(
@@ -55,12 +56,12 @@ class EditNoteViewModel(
         _textStyle.value = style
     }
 
-    suspend fun loadCategory(): List<Category> {
-        return cateRepo.getAllCategories()
+    fun loadCategory(): List<Category>  = runBlocking{
+        cateRepo.getAll()
     }
 
-    suspend fun getCategoriesOfNote(): List<Category> {
-        return crossRefRepo.getCategoriesOfNote(_note.value.noteId)
+    fun getCategoriesOfNote(): List<Category> = runBlocking {
+        crossRefRepo.getCategoriesOfNote(_note.value.noteId)
     }
 
     fun updateNote(wasChecked: Boolean, isNowChecked: Boolean, category: Category) {
@@ -126,27 +127,27 @@ class EditNoteViewModel(
         }
     }
 
-    fun updateBold() {
+    fun toggleBold() {
         _textStyle.value = _textStyle.value.copy(isBold = !_textStyle.value.isBold)
     }
 
-    fun updateItalic() {
+    fun toggleItalic() {
         _textStyle.value = _textStyle.value.copy(isItalic = !_textStyle.value.isItalic)
     }
 
-    fun updateUnderline() {
+    fun toggleUnderline() {
         _textStyle.value = _textStyle.value.copy(isUnderline = !_textStyle.value.isUnderline)
     }
 
-    fun updateBackgroundColor(color: Int?) {
+    fun toggleBackgroundTextColor(color: Int?) {
         _textStyle.value = _textStyle.value.copy(bgColor = color)
     }
 
-    fun updateTextColor(color: Int?) {
+    fun toggleTextColor(color: Int?) {
         _textStyle.value = _textStyle.value.copy(textColor = color)
     }
 
-    fun updateTextSize(size: Int) {
+    fun toggleTextSize(size: Int) {
         _textStyle.value = _textStyle.value.copy(size = size)
     }
 }

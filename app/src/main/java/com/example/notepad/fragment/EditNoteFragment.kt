@@ -13,7 +13,6 @@ import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -260,32 +259,32 @@ class EditNoteFragment : Fragment() {
 
 
         binding.btnBold.setOnClickListener {
-            viewModel.updateBold()
+            viewModel.toggleBold()
         }
 
         binding.btnItalic.setOnClickListener {
-            viewModel.updateItalic()
+            viewModel.toggleItalic()
         }
 
         binding.btnUnderline.setOnClickListener {
-            viewModel.updateUnderline()
+            viewModel.toggleUnderline()
         }
 
         binding.btnHighligh.setOnClickListener {
             showColorPicker{ selectedColor ->
-                viewModel.updateBackgroundColor(selectedColor?.toColorInt())
+                viewModel.toggleBackgroundTextColor(selectedColor?.toColorInt())
             }
         }
 
         binding.btnTextColor.setOnClickListener {
             showColorPicker{ selectedColor ->
-                viewModel.updateTextColor(selectedColor?.toColorInt())
+                viewModel.toggleTextColor(selectedColor?.toColorInt())
             }
         }
 
         binding.btnSize.setOnClickListener {
             showTextSizeDialog{
-                viewModel.updateTextSize(it)
+                viewModel.toggleTextSize(it)
             }
         }
     }
@@ -388,32 +387,30 @@ class EditNoteFragment : Fragment() {
     }
 
     private fun showPickCategoryDialog() {
-        lifecycleScope.launch {
-            val categories = viewModel.loadCategory()
-            val categoryOfNote = viewModel.getCategoriesOfNote()
-            val categoryNames = categories.map { it.name }.toTypedArray()
+        val categories = viewModel.loadCategory()
+        val categoryOfNote = viewModel.getCategoriesOfNote()
+        val categoryNames = categories.map { it.name }.toTypedArray()
 
-            val initialCheckedItems = BooleanArray(categories.size) { index ->
-                categoryOfNote.any { it.categoryId == categories[index].categoryId }
-            }
-
-            val checkedItems = initialCheckedItems.copyOf()
-
-            AlertDialog.Builder(requireContext())
-                .setTitle("Select category")
-                .setMultiChoiceItems(categoryNames, checkedItems) { _, which, isChecked ->
-                    checkedItems[which] = isChecked
-                }
-                .setPositiveButton("OK") { _, _ ->
-                    categories.forEachIndexed { index, category ->
-                        val wasChecked = initialCheckedItems[index]
-                        val isNowChecked = checkedItems[index]
-                        viewModel.updateNote(wasChecked, isNowChecked, category)
-                    }
-                }
-                .setNegativeButton("Cancel", null)
-                .show()
+        val initialCheckedItems = BooleanArray(categories.size) { index ->
+            categoryOfNote.any { it.categoryId == categories[index].categoryId }
         }
+
+        val checkedItems = initialCheckedItems.copyOf()
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Select category")
+            .setMultiChoiceItems(categoryNames, checkedItems) { _, which, isChecked ->
+                checkedItems[which] = isChecked
+            }
+            .setPositiveButton("OK") { _, _ ->
+                categories.forEachIndexed { index, category ->
+                    val wasChecked = initialCheckedItems[index]
+                    val isNowChecked = checkedItems[index]
+                    viewModel.updateNote(wasChecked, isNowChecked, category)
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun getTextStyleFromSpanned(spanned: Spanned, charIndex: Int): TextStyle {

@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import com.example.notepad.db.entity.Note
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface NoteDao {
@@ -14,16 +15,16 @@ interface NoteDao {
     suspend fun insertNote(note: Note): Long
 
     @Query("SELECT * FROM notes WHERE onTrash = 0 ORDER BY lastEdit DESC")
-    suspend fun getAllNotesSortedByDate(): List<Note>
+    fun getAllNotesSortedByDate(): Flow<List<Note>>
 
     @Query("SELECT * FROM notes WHERE onTrash = 0 ORDER BY title ASC")
-    suspend fun getAllNotesSortedByTitle(): List<Note>
+    fun getAllNotesSortedByTitle(): Flow<List<Note>>
 
     @Query("SELECT * FROM notes WHERE noteId = :noteId LIMIT 1")
     suspend fun getNoteById(noteId: Long): Note?
 
     @Query("SELECT * FROM notes WHERE onTrash = 1")
-    suspend fun getAllTrashedNotes(): List<Note>
+    fun getAllTrashedNotes(): Flow<List<Note>>
 
     @Update
     suspend fun updateNote(note: Note)
@@ -33,7 +34,7 @@ interface NoteDao {
         WHERE onTrash = 0 
           AND (title LIKE '%' || :query || '%' OR content LIKE '%' || :query || '%')
     """)
-    suspend fun searchNotes(query: String): List<Note>
+    fun searchNotes(query: String): Flow<List<Note>>
 
     @Delete
     suspend fun deleteNote(note: Note)

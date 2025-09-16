@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import com.example.notepad.db.entity.Category
+import kotlinx.coroutines.flow.Flow
 
 
 @Dao
@@ -15,7 +16,10 @@ interface CategoryDao {
     suspend fun insertCategory(category: Category): Long
 
     @Query("SELECT * FROM categories")
-    suspend fun getAllCategories(): List<Category>
+    fun getAllCategories(): Flow<List<Category>>
+
+    @Query("SELECT * FROM categories")
+    suspend fun getAll(): List<Category>
 
     @Query("SELECT * FROM categories WHERE categoryId = :categoryId LIMIT 1")
     suspend fun getCategoryById(categoryId: Long): Category?

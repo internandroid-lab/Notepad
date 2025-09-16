@@ -25,7 +25,6 @@ import com.example.notepad.db.entity.Note
 import com.example.notepad.utils.AppUtil
 import com.example.notepad.utils.SortType
 import com.example.notepad.viewmodel.CategoryNotesViewModel
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.Date
@@ -64,7 +63,6 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
 
     override fun onResume() {
         super.onResume()
-        viewModel.loadNotesByCategory()
         (activity as? MainActivity)?.setToolbarController(this)
     }
 
@@ -142,7 +140,7 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
                 }
                 launch {
                     viewModel.category.collect { category ->
-                        (activity as? MainActivity)?.updateToolbarTitle("Notepad\n${category.name}")
+                        (activity as? MainActivity)?.updateToolbarTitle("Notepad\n${category?.name}")
                     }
                 }
                 launch {

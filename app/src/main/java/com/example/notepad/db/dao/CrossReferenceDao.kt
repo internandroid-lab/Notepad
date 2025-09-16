@@ -8,6 +8,7 @@ import androidx.room.Transaction
 import com.example.notepad.db.entity.Category
 import com.example.notepad.db.entity.CrossReference
 import com.example.notepad.db.entity.Note
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CrossReferenceDao {
@@ -32,7 +33,7 @@ interface CrossReferenceDao {
         WHERE nc.categoryId = :categoryId AND notes.onTrash = 0
         ORDER BY lastEdit DESC
     """)
-    suspend fun getAllNotesInCategorySortedByDate(categoryId: Long): List<Note>
+    fun getAllNotesInCategorySortedByDate(categoryId: Long): Flow<List<Note>>
 
     @Transaction
     @Query("""
@@ -42,7 +43,7 @@ interface CrossReferenceDao {
         WHERE nc.categoryId = :categoryId AND notes.onTrash = 0
         ORDER BY notes.title ASC
     """)
-    suspend fun getAllNotesInCategorySortedByTitle(categoryId: Long): List<Note>
+    fun getAllNotesInCategorySortedByTitle(categoryId: Long): Flow<List<Note>>
 
     @Transaction
     @Query("""
@@ -53,7 +54,7 @@ interface CrossReferenceDao {
           AND notes.onTrash = 0 
           AND (notes.title LIKE '%' || :query || '%' OR notes.content LIKE '%' || :query || '%')
     """)
-    suspend fun searchNotesInCategory(categoryId: Long, query: String): List<Note>
+    fun searchNotesInCategory(categoryId: Long, query: String): Flow<List<Note>>
 
     @Transaction
     @Query("""

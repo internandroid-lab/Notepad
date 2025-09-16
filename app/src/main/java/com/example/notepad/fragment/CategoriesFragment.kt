@@ -20,7 +20,6 @@ import com.example.notepad.databinding.FragmentCategoriesBinding
 import com.example.notepad.db.entity.Category
 import com.example.notepad.utils.AppUtil
 import com.example.notepad.viewmodel.CategoriesViewModel
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 

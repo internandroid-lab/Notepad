@@ -8,16 +8,18 @@ import com.example.notepad.repository.CategoryRepository
 import com.example.notepad.repository.CrossReferenceRepository
 import com.example.notepad.repository.NoteRepository
 import com.example.notepad.utils.SortType
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class CategoryNotesViewModel(
     private val cateRepo: CategoryRepository,
@@ -25,11 +27,8 @@ class CategoryNotesViewModel(
     private val crossRefRepo: CrossReferenceRepository
 ) : ViewModel() {
 
-    private val _notes = MutableStateFlow<List<Note>>(emptyList())
-    val notes: StateFlow<List<Note>> = _notes.asStateFlow()
-
-    private val _category = MutableStateFlow(Category())
-    val category: StateFlow<Category> = _category.asStateFlow()
+    private val _category = MutableStateFlow<Category?>(null)
+    val category: StateFlow<Category?> = _category.asStateFlow()
 
     private val _isSearchMode = MutableStateFlow(false)
     val isSearchMode: StateFlow<Boolean> = _isSearchMode.asStateFlow()
@@ -43,52 +42,45 @@ class CategoryNotesViewModel(
     private val _event = MutableSharedFlow<String>()
     val event: SharedFlow<String> = _event.asSharedFlow()
 
-    private var currentSortType = SortType.BY_DATE
+    private val _searchQuery = MutableStateFlow("")
+
+    private val _currentSortType = MutableStateFlow(SortType.BY_DATE)
+
+    private val _notes = MutableStateFlow<List<Note>>(emptyList())
+    val notes: StateFlow<List<Note>> =
+        combine(_category.filterNotNull(),_searchQuery,_currentSortType){ category, query, sortType ->
+            Triple(category, query, sortType)
+        }.flatMapLatest { (category, query, sortType) ->
+            if(query.isNotBlank()){
+                crossRefRepo.searchNotesInCategory(category.categoryId, query)
+            } else {
+                when (sortType) {
+                    SortType.BY_DATE -> crossRefRepo.getAllNotesInCategorySortedByDate(category.categoryId)
+                    SortType.BY_TITLE -> crossRefRepo.getAllNotesInCategorySortedByTitle(
+                        category.categoryId
+                    )
+                }
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
     fun loadCategory(categoryId: Long) {
         viewModelScope.launch {
-            val category = withContext(Dispatchers.IO) {
-                cateRepo.getCategoryById(categoryId)
-            }
-            _category.value = category!!
-            loadNotesByCategory()
-        }
-    }
-
-    fun loadNotesByCategory() {
-        viewModelScope.launch {
-//            delay(500)
-            val notes = when (currentSortType) {
-                SortType.BY_DATE -> crossRefRepo.getAllNotesInCategorySortedByDate(_category.value.categoryId)
-                SortType.BY_TITLE -> crossRefRepo.getAllNotesInCategorySortedByTitle(
-                    _category.value.categoryId
-                )
-            }
-            _notes.value = notes
+            _category.value = cateRepo.getCategoryById(categoryId)
         }
     }
 
     fun searchNotes(query: String) {
-        if (query.isEmpty()) {
-            loadNotesByCategory()
-        } else {
-            viewModelScope.launch {
-                val searchResults =
-                    crossRefRepo.searchNotesInCategory(_category.value.categoryId, query)
-                _notes.value = searchResults
-            }
-        }
+        _searchQuery.value = query
     }
 
     fun sortNotes(sortType: SortType) {
-        currentSortType = sortType
-        loadNotesByCategory()
+        _currentSortType.value = sortType
     }
 
     fun toggleSearchMode() {
         _isSearchMode.value = !_isSearchMode.value
         if (!_isSearchMode.value) {
-            loadNotesByCategory()
+            _searchQuery.value = ""
         }
     }
 
@@ -116,9 +108,8 @@ class CategoryNotesViewModel(
                     noteRepo.updateNote(finalNote)
                 }
                 _event.emit("${_selectedNotes.value.size} notes deleted")
-                loadNotesByCategory()
+                clearSelection()
             }
-            clearSelection()
         }
     }
 
@@ -133,9 +124,8 @@ class CategoryNotesViewModel(
     fun importNote(note: Note) {
         viewModelScope.launch {
             val noteId = noteRepo.insertNote(note)
-            crossRefRepo.addNoteToCategory(noteId, _category.value.categoryId)
+            crossRefRepo.addNoteToCategory(noteId, _category.value!!.categoryId)
             _event.emit("1 note imported")
-            loadNotesByCategory()
         }
     }
 }
