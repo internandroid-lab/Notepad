@@ -15,8 +15,8 @@ class CrossReferenceRepository(private val crossRef: CrossReferenceDao) {
     suspend fun deleteNoteFromCategory(noteId: Long, categoryId: Long) =
         withContext(Dispatchers.IO){ crossRef.deleteNoteFromCategory(noteId, categoryId) }
 
-    suspend fun getAllNotesInCategory(categoryId: Long): List<Note> =
-        withContext(Dispatchers.IO){ crossRef.getAllNotesInCategory(categoryId) }
+    suspend fun getAllNotesInCategorySortedByDate(categoryId: Long): List<Note> =
+        withContext(Dispatchers.IO){ crossRef.getAllNotesInCategorySortedByDate(categoryId) }
 
     suspend fun getAllNotesInCategorySortedByTitle(categoryId: Long): List<Note> =
         withContext(Dispatchers.IO){ crossRef.getAllNotesInCategorySortedByTitle(categoryId) }

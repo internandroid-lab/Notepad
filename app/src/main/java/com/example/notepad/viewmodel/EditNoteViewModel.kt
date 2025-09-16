@@ -1,6 +1,5 @@
 package com.example.notepad.viewmodel
 
-import android.R.attr.category
 import android.text.Editable
 import android.text.Spannable
 import androidx.lifecycle.ViewModel
@@ -12,12 +11,10 @@ import com.example.notepad.repository.CrossReferenceRepository
 import com.example.notepad.repository.NoteRepository
 import com.example.notepad.utils.TextStyle
 import com.example.notepad.utils.toBase64
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.Date
 
 class EditNoteViewModel(

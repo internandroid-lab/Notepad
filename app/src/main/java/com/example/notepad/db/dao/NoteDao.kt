@@ -13,8 +13,8 @@ interface NoteDao {
     @Insert
     suspend fun insertNote(note: Note): Long
 
-    @Query("SELECT * FROM notes WHERE onTrash = 0")
-    suspend fun getAllNotes(): List<Note>
+    @Query("SELECT * FROM notes WHERE onTrash = 0 ORDER BY lastEdit DESC")
+    suspend fun getAllNotesSortedByDate(): List<Note>
 
     @Query("SELECT * FROM notes WHERE onTrash = 0 ORDER BY title ASC")
     suspend fun getAllNotesSortedByTitle(): List<Note>

@@ -11,7 +11,8 @@ class NoteRepository(private val noteDao: NoteDao, private val crossRef: CrossRe
     suspend fun insertNote(note: Note): Long =
         withContext(Dispatchers.IO) { noteDao.insertNote(note) }
 
-    suspend fun getAllNotes(): List<Note> = withContext(Dispatchers.IO) { noteDao.getAllNotes() }
+    suspend fun getAllNotesSortedByDate(): List<Note> =
+        withContext(Dispatchers.IO) { noteDao.getAllNotesSortedByDate() }
 
     suspend fun getAllNotesSortedByTitle(): List<Note> =
         withContext(Dispatchers.IO) { noteDao.getAllNotesSortedByTitle() }

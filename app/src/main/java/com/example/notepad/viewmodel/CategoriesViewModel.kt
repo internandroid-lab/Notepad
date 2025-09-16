@@ -1,11 +1,9 @@
 package com.example.notepad.viewmodel
 
-import android.util.Log.e
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.notepad.db.entity.Category
 import com.example.notepad.repository.CategoryRepository
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -13,7 +11,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class CategoriesViewModel(private val cateRepo: CategoryRepository) : ViewModel() {
 
@@ -32,7 +29,7 @@ class CategoriesViewModel(private val cateRepo: CategoryRepository) : ViewModel(
 
         viewModelScope.launch {
             val category = Category(name = name.trim())
-                cateRepo.insertCategory(category)
+            cateRepo.insertCategory(category)
             _event.emit("Category added")
             loadCategories()
         }

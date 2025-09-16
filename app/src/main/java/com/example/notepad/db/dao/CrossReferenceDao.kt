@@ -30,8 +30,9 @@ interface CrossReferenceDao {
         INNER JOIN note_category_cross_ref AS nc 
             ON notes.noteId = nc.noteId
         WHERE nc.categoryId = :categoryId AND notes.onTrash = 0
+        ORDER BY lastEdit DESC
     """)
-    suspend fun getAllNotesInCategory(categoryId: Long): List<Note>
+    suspend fun getAllNotesInCategorySortedByDate(categoryId: Long): List<Note>
 
     @Transaction
     @Query("""

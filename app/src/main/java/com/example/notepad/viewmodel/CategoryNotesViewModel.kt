@@ -59,7 +59,7 @@ class CategoryNotesViewModel(
         viewModelScope.launch {
             delay(500)
             val notes = when (currentSortType) {
-                SortType.BY_DATE -> crossRefRepo.getAllNotesInCategory(_category.value.categoryId)
+                SortType.BY_DATE -> crossRefRepo.getAllNotesInCategorySortedByDate(_category.value.categoryId)
                 SortType.BY_TITLE -> crossRefRepo.getAllNotesInCategorySortedByTitle(
                     _category.value.categoryId
                 )
