@@ -1,5 +1,6 @@
 package com.example.notepad.viewmodel
 
+import android.R.attr.category
 import android.text.Editable
 import android.text.Spannable
 import androidx.lifecycle.ViewModel
@@ -35,9 +36,7 @@ class EditNoteViewModel(
     fun loadNote(noteId: Long) {
         if (noteId > 0) {
             viewModelScope.launch {
-                val note = withContext(Dispatchers.IO) {
-                    noteRepo.getNoteById(noteId)
-                }
+                val note = noteRepo.getNoteById(noteId)
                 _note.value = note!!
             }
         } else {
@@ -54,30 +53,22 @@ class EditNoteViewModel(
     }
 
     suspend fun loadCategory(): List<Category> {
-        return withContext(Dispatchers.IO) {
-            cateRepo.getAllCategories()
-        }
+        return cateRepo.getAllCategories()
     }
 
     suspend fun getCategoriesOfNote(): List<Category> {
-        return withContext(Dispatchers.IO) {
-            crossRefRepo.getCategoriesOfNote(_note.value.noteId)
-        }
+        return crossRefRepo.getCategoriesOfNote(_note.value.noteId)
     }
 
     fun updateNote(wasChecked: Boolean, isNowChecked: Boolean, category: Category) {
         if (wasChecked && !isNowChecked) {
             viewModelScope.launch {
-                withContext(Dispatchers.IO) {
-                    crossRefRepo.deleteNoteFromCategory(_note.value.noteId, category.categoryId)
-                }
+                crossRefRepo.deleteNoteFromCategory(_note.value.noteId, category.categoryId)
             }
         }
         if (!wasChecked && isNowChecked) {
             viewModelScope.launch {
-                withContext(Dispatchers.IO) {
-                    crossRefRepo.addNoteToCategory(_note.value.noteId, category.categoryId)
-                }
+                crossRefRepo.addNoteToCategory(_note.value.noteId, category.categoryId)
             }
         }
     }
@@ -106,15 +97,13 @@ class EditNoteViewModel(
         )
 
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                if (finalNote.noteId == 0L) {
-                    val noteId = noteRepo.insertNote(finalNote)
-                    if (categoryId > 0) {
-                        crossRefRepo.addNoteToCategory(noteId, categoryId)
-                    }
-                } else {
-                    noteRepo.updateNote(finalNote)
+            if (finalNote.noteId == 0L) {
+                val noteId = noteRepo.insertNote(finalNote)
+                if (categoryId > 0) {
+                    crossRefRepo.addNoteToCategory(noteId, categoryId)
                 }
+            } else {
+                noteRepo.updateNote(finalNote)
             }
         }
         return true
@@ -125,9 +114,7 @@ class EditNoteViewModel(
         val finalNote = currentNote.copy(onTrash = true)
 
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                noteRepo.updateNote(finalNote)
-            }
+            noteRepo.updateNote(finalNote)
         }
     }
 

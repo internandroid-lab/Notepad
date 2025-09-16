@@ -34,18 +34,14 @@ class TrashViewModel(private val noteRepo: NoteRepository) : ViewModel() {
 
     fun updateNote(note: Note) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                noteRepo.updateNote(note)
-            }
+            noteRepo.updateNote(note)
             loadTrashNotes()
         }
     }
 
     fun deleteNote(note: Note) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                noteRepo.deleteNote(note)
-            }
+            noteRepo.deleteNote(note)
             _event.emit("Note Deleted")
             loadTrashNotes()
         }
@@ -70,10 +66,8 @@ class TrashViewModel(private val noteRepo: NoteRepository) : ViewModel() {
     fun deleteSelectedNotes() {
         if (_selectedNotes.value.isNotEmpty()) {
             viewModelScope.launch {
-                withContext(Dispatchers.IO) {
-                    for (i in _selectedNotes.value) {
-                        noteRepo.deleteNote(i)
-                    }
+                for (i in _selectedNotes.value) {
+                    noteRepo.deleteNote(i)
                 }
                 _event.emit("${_selectedNotes.value.size} notes deleted")
                 loadTrashNotes()
@@ -85,11 +79,9 @@ class TrashViewModel(private val noteRepo: NoteRepository) : ViewModel() {
     fun unDeleteSelectedNotes() {
         if (_selectedNotes.value.isNotEmpty()) {
             viewModelScope.launch {
-                withContext(Dispatchers.IO) {
-                    for (i in _selectedNotes.value) {
-                        val finalNote = i.copy(onTrash = false)
-                        noteRepo.updateNote(finalNote)
-                    }
+                for (i in _selectedNotes.value) {
+                    val finalNote = i.copy(onTrash = false)
+                    noteRepo.updateNote(finalNote)
                 }
                 _event.emit("${_selectedNotes.value.size} notes restored")
                 loadTrashNotes()
@@ -109,9 +101,7 @@ class TrashViewModel(private val noteRepo: NoteRepository) : ViewModel() {
     private fun loadTrashNotes() {
         viewModelScope.launch {
             delay(500)
-            val notes = withContext(Dispatchers.IO) {
-                noteRepo.getAllTrashedNotes()
-            }
+            val notes = noteRepo.getAllTrashedNotes()
             _notes.value = notes
         }
     }

@@ -32,9 +32,7 @@ class CategoriesViewModel(private val cateRepo: CategoryRepository) : ViewModel(
 
         viewModelScope.launch {
             val category = Category(name = name.trim())
-            withContext(Dispatchers.IO) {
                 cateRepo.insertCategory(category)
-            }
             _event.emit("Category added")
             loadCategories()
         }
@@ -42,18 +40,14 @@ class CategoriesViewModel(private val cateRepo: CategoryRepository) : ViewModel(
 
     fun updateCategory(category: Category) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                cateRepo.updateCategory(category)
-            }
+            cateRepo.updateCategory(category)
             loadCategories()
         }
     }
 
     fun deleteCategory(category: Category) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                cateRepo.deleteCategory(category)
-            }
+            cateRepo.deleteCategory(category)
             _event.emit("Category deleted")
             loadCategories()
         }
@@ -61,9 +55,7 @@ class CategoriesViewModel(private val cateRepo: CategoryRepository) : ViewModel(
 
     private fun loadCategories() {
         viewModelScope.launch {
-            val categories = withContext(Dispatchers.IO) {
-                cateRepo.getAllCategories()
-            }
+            val categories = cateRepo.getAllCategories()
             _categories.value = categories
         }
     }

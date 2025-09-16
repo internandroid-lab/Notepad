@@ -58,13 +58,11 @@ class CategoryNotesViewModel(
     fun loadNotesByCategory() {
         viewModelScope.launch {
             delay(500)
-            val notes = withContext(Dispatchers.IO) {
-                when (currentSortType) {
-                    SortType.BY_DATE -> crossRefRepo.getAllNotesInCategory(_category.value.categoryId)
-                    SortType.BY_TITLE -> crossRefRepo.getAllNotesInCategorySortedByTitle(
-                        _category.value.categoryId
-                    )
-                }
+            val notes = when (currentSortType) {
+                SortType.BY_DATE -> crossRefRepo.getAllNotesInCategory(_category.value.categoryId)
+                SortType.BY_TITLE -> crossRefRepo.getAllNotesInCategorySortedByTitle(
+                    _category.value.categoryId
+                )
             }
             _notes.value = notes
         }
@@ -75,9 +73,8 @@ class CategoryNotesViewModel(
             loadNotesByCategory()
         } else {
             viewModelScope.launch {
-                val searchResults = withContext(Dispatchers.IO) {
+                val searchResults =
                     crossRefRepo.searchNotesInCategory(_category.value.categoryId, query)
-                }
                 _notes.value = searchResults
             }
         }
@@ -114,11 +111,9 @@ class CategoryNotesViewModel(
     fun deleteSelectedNotes() {
         if (_selectedNotes.value.isNotEmpty()) {
             viewModelScope.launch {
-                withContext(Dispatchers.IO) {
-                    for (i in _selectedNotes.value) {
-                        val finalNote = i.copy(onTrash = true)
-                        noteRepo.updateNote(finalNote)
-                    }
+                for (i in _selectedNotes.value) {
+                    val finalNote = i.copy(onTrash = true)
+                    noteRepo.updateNote(finalNote)
                 }
                 _event.emit("${_selectedNotes.value.size} notes deleted")
                 loadNotesByCategory()
@@ -137,10 +132,8 @@ class CategoryNotesViewModel(
 
     fun importNote(note: Note) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                val noteId = noteRepo.insertNote(note)
-                crossRefRepo.addNoteToCategory(noteId, _category.value.categoryId)
-            }
+            val noteId = noteRepo.insertNote(note)
+            crossRefRepo.addNoteToCategory(noteId, _category.value.categoryId)
             _event.emit("1 note imported")
             loadNotesByCategory()
         }

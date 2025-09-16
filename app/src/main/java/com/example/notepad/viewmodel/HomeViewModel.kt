@@ -44,11 +44,9 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
     fun loadNotes() {
         viewModelScope.launch {
             delay(500)
-            val notes = withContext(Dispatchers.IO) {
-                when (currentSortType) {
-                    SortType.BY_DATE -> noteRepo.getAllNotes()
-                    SortType.BY_TITLE -> noteRepo.getAllNotesSortedByTitle()
-                }
+            val notes = when (currentSortType) {
+                SortType.BY_DATE -> noteRepo.getAllNotes()
+                SortType.BY_TITLE -> noteRepo.getAllNotesSortedByTitle()
             }
             _notes.value = notes
         }
@@ -76,9 +74,7 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
             loadNotes()
         } else {
             viewModelScope.launch {
-                val notes = withContext(Dispatchers.IO) {
-                    noteRepo.searchNotes(query)
-                }
+                val notes = noteRepo.searchNotes(query)
                 _notes.value = notes
             }
         }
@@ -99,9 +95,7 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
 
     fun importNote(note: Note) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                noteRepo.insertNote(note)
-            }
+            noteRepo.insertNote(note)
             _event.emit("1 note imported")
             loadNotes()
         }
@@ -111,11 +105,9 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
         if (_selectedNotes.value.isNotEmpty()) {
             val size = _selectedNotes.value.size
             viewModelScope.launch {
-                withContext(Dispatchers.IO) {
-                    for (i in _selectedNotes.value) {
-                        val finalNote = i.copy(onTrash = true)
-                        noteRepo.updateNote(finalNote)
-                    }
+                for (i in _selectedNotes.value) {
+                    val finalNote = i.copy(onTrash = true)
+                    noteRepo.updateNote(finalNote)
                 }
                 _event.emit("$size notes deleted")
                 loadNotes()
