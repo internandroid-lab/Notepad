@@ -6,17 +6,13 @@ import java.util.Date
 import java.util.Locale
 
 class Converters {
-    private val formatter = SimpleDateFormat("dd/MM/yyyy, hh:mm a", Locale.getDefault())
-
     @TypeConverter
-    fun toString(date: Date?): String? {
-        return date?.let { formatter.format(it) }
+    fun fromTimestamp(value: Long?): Date? {
+        return value?.let { Date(it) }
     }
 
     @TypeConverter
-    fun toDate(dateString: String?): Date? {
-        return dateString?.let {
-            formatter.parse(it)
-        }
+    fun dateToTimestamp(date: Date?): Long? {
+        return date?.time
     }
 }

@@ -1,6 +1,5 @@
 package com.example.notepad.adapter
 
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -42,6 +41,9 @@ class NoteAdapter(
                 if (bundle.containsKey("lastEditStr")) {
                     holder.binding.tvLastEdit.text = bundle.getString("lastEditStr")
                 }
+                if (bundle.containsKey("color")) {
+                    holder.binding.groupLl.setBackgroundColor(bundle.getString("color")!!.toColorInt())
+                }
             }
         } else {
             super.onBindViewHolder(holder, position, payloads)
@@ -53,6 +55,7 @@ class NoteAdapter(
         fun bind(note: Note) {
             binding.tvNoteTitle.text = note.title
             binding.tvLastEdit.text = note.lastEditStr
+            binding.groupLl.setBackgroundColor(note.color.toColorInt())
 
             binding.root.setOnClickListener {
                 onNoteClick(note)
@@ -61,7 +64,7 @@ class NoteAdapter(
             if (isSelected(note)) {
                 binding.groupLl.setBackgroundColor("#FFFACD".toColorInt())
             } else {
-                binding.groupLl.setBackgroundColor(Color.WHITE)
+                binding.groupLl.setBackgroundColor(note.color.toColorInt())
             }
 
             binding.root.setOnLongClickListener {
@@ -87,6 +90,9 @@ class NoteAdapter(
             }
             if(oldItem.lastEditStr != newItem.lastEditStr){
                 bundle.putString("lastEditStr", newItem.lastEditStr)
+            }
+            if(oldItem.color != newItem.color){
+                bundle.putString("color",newItem.color)
             }
             return if (bundle.size()==0) null else bundle
         }

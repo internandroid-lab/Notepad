@@ -2,6 +2,7 @@ package com.example.notepad.di
 
 import androidx.room.Room
 import com.example.notepad.db.AppDatabase
+import com.example.notepad.db.MIGRATION
 import com.example.notepad.db.dao.CategoryDao
 import com.example.notepad.db.dao.CrossReferenceDao
 import com.example.notepad.db.dao.NoteDao
@@ -23,7 +24,7 @@ val appModule = module{
             androidContext(),
             AppDatabase::class.java,
             "appdb"
-        ).fallbackToDestructiveMigration().build()
+        ).addMigrations(MIGRATION).build()
     }
 
     single<NoteDao> { get<AppDatabase>().noteDao() }

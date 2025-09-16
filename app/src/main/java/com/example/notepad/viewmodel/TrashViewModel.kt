@@ -69,8 +69,8 @@ class TrashViewModel(private val noteRepo: NoteRepository) : ViewModel() {
                 }
                 _event.emit("${_selectedNotes.value.size} notes deleted")
                 loadTrashNotes()
+                clearSelection()
             }
-            clearSelection()
         }
     }
 
@@ -83,8 +83,8 @@ class TrashViewModel(private val noteRepo: NoteRepository) : ViewModel() {
                 }
                 _event.emit("${_selectedNotes.value.size} notes restored")
                 loadTrashNotes()
+                clearSelection()
             }
-            clearSelection()
         }
     }
 

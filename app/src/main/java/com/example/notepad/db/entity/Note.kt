@@ -13,6 +13,7 @@ data class Note(
     val title: String = "",
     val content: String = "",
     val lastEdit: Date = Date(),
+    val color: String = "#FFFFFF",
     val onTrash: Boolean = false
 ){
     val lastEditStr: String

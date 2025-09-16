@@ -1,11 +1,11 @@
 package com.example.notepad.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.notepad.db.entity.Note
 import com.example.notepad.repository.NoteRepository
 import com.example.notepad.utils.SortType
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -100,17 +100,19 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
     }
 
     fun deleteSelectedNotes() {
+        Log.d("MTHAI", "deleteSelectedNotes: 1")
         if (_selectedNotes.value.isNotEmpty()) {
-            val size = _selectedNotes.value.size
             viewModelScope.launch {
                 for (i in _selectedNotes.value) {
                     val finalNote = i.copy(onTrash = true)
                     noteRepo.updateNote(finalNote)
                 }
-                _event.emit("$size notes deleted")
+                Log.d("MTHAI", "deleteSelectedNotes: 2")
+
+                _event.emit("${_selectedNotes.value.size} notes deleted")
                 loadNotes()
+                clearSelection()
             }
-            clearSelection()
         }
     }
 

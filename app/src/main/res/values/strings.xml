@@ -30,4 +30,5 @@
     <string name="set_default_20">SET DEFAULT (20)</string>
     <string name="add_to_categories">Add to categories</string>
     <string name="undelete">Undelete</string>
+    <string name="color">Color</string>
 </resources>

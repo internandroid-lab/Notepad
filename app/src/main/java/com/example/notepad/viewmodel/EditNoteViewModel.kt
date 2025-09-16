@@ -11,8 +11,11 @@ import com.example.notepad.repository.CrossReferenceRepository
 import com.example.notepad.repository.NoteRepository
 import com.example.notepad.utils.TextStyle
 import com.example.notepad.utils.toBase64
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.Date
@@ -28,6 +31,9 @@ class EditNoteViewModel(
 
     private val _textStyle = MutableStateFlow(TextStyle())
     val textStyle: StateFlow<TextStyle> = _textStyle.asStateFlow()
+
+    private val _event = MutableSharedFlow<String>()
+    val event: SharedFlow<String> = _event.asSharedFlow()
 
 
     fun loadNote(noteId: Long) {
@@ -80,6 +86,10 @@ class EditNoteViewModel(
 
     }
 
+    fun updateColor(color: String?){
+        _note.value = _note.value.copy(color = color?: "#FFFFFF")
+    }
+
     fun saveNote(categoryId: Long): Boolean {
         val currentNote = _note.value
         val titleText = currentNote.title.trim()
@@ -102,6 +112,7 @@ class EditNoteViewModel(
             } else {
                 noteRepo.updateNote(finalNote)
             }
+            _event.emit("Note saved successfully")
         }
         return true
     }
