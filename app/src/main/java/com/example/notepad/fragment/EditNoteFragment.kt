@@ -117,8 +117,8 @@ class EditNoteFragment : Fragment() {
                                 binding.etContent.setSelection(safePos)
 
                                 if (spanned.isNotEmpty()) {
-                                    val style = deriveTextStyleFromSpanned(spanned, safePos - 1)
-                                    viewModel.loadTextStyle(style)
+                                    val style = getTextStyleFromSpanned(spanned, safePos - 1)
+                                    viewModel.updateTextStyle(style)
                                 }
                             }
                         }
@@ -244,6 +244,15 @@ class EditNoteFragment : Fragment() {
             }
         })
 
+        binding.etContent.onSelectionChangedListener = { selStart, _ ->
+            if (selStart > 0) {
+                val spanned = binding.etContent.text as Spanned
+                val style = getTextStyleFromSpanned(spanned, selStart - 1)
+                viewModel.updateTextStyle(style)
+            }
+        }
+
+
         binding.btnBold.setOnClickListener {
             viewModel.updateBold()
         }
@@ -257,13 +266,13 @@ class EditNoteFragment : Fragment() {
         }
 
         binding.btnHighligh.setOnClickListener {
-            openColorPicker{selectedColor ->
+            showColorPicker{ selectedColor ->
                 viewModel.updateBackgroundColor(selectedColor?.toColorInt())
             }
         }
 
         binding.btnTextColor.setOnClickListener {
-            openColorPicker{selectedColor ->
+            showColorPicker{ selectedColor ->
                 viewModel.updateTextColor(selectedColor?.toColorInt())
             }
         }
@@ -287,7 +296,7 @@ class EditNoteFragment : Fragment() {
                     true
                 }
                 R.id.add_to_category -> {
-                    showCategoryDialog()
+                    showPickCategoryDialog()
                     true
                 }
                 R.id.action_export -> {
@@ -316,7 +325,7 @@ class EditNoteFragment : Fragment() {
         }
     }
 
-    private fun openColorPicker(onColorSelected: (String?) -> Unit) {
+    private fun showColorPicker(onColorSelected: (String?) -> Unit) {
         val defaultColor = "#FF0000".toColorInt()
         val colorPicker = AmbilWarnaDialog(
             requireContext(),
@@ -366,7 +375,7 @@ class EditNoteFragment : Fragment() {
             .show()
     }
 
-    private fun showCategoryDialog() {
+    private fun showPickCategoryDialog() {
         lifecycleScope.launch {
             val categories = viewModel.loadCategory()
             val categoryOfNote = viewModel.getCategoriesOfNote()
@@ -395,7 +404,7 @@ class EditNoteFragment : Fragment() {
         }
     }
 
-    private fun deriveTextStyleFromSpanned(spanned: Spanned, charIndex: Int): TextStyle {
+    private fun getTextStyleFromSpanned(spanned: Spanned, charIndex: Int): TextStyle {
         if (spanned.isEmpty()) return TextStyle()
 
         val pos = charIndex.coerceIn(0, spanned.length - 1)
@@ -408,16 +417,14 @@ class EditNoteFragment : Fragment() {
         val isUnderline = spanned.getSpans(start, end, UnderlineSpan::class.java).isNotEmpty()
 
         val fgSpan = spanned.getSpans(start, end, ForegroundColorSpan::class.java).firstOrNull()
-        val fgColor = fgSpan?.let { (it as ForegroundColorSpan).getForegroundColor() } // Int?
+        val fgColor = fgSpan?.foregroundColor
 
         val bgSpan = spanned.getSpans(start, end, BackgroundColorSpan::class.java).firstOrNull()
-        val bgColor = bgSpan?.let { (it as BackgroundColorSpan).getBackgroundColor() } // Int?
+        val bgColor = bgSpan?.backgroundColor
 
         val sizeSpan = spanned.getSpans(start, end, AbsoluteSizeSpan::class.java).firstOrNull()
-        val size = sizeSpan?.let { (it as AbsoluteSizeSpan).getSize() } ?: viewModel.textStyle.value.size
+        val size = sizeSpan?.size ?: 20
 
         return TextStyle(isBold, isItalic, isUnderline, bgColor, fgColor, size)
     }
-
-
 }

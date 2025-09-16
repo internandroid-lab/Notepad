@@ -249,7 +249,7 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
         popup.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.action_import -> {
-                    openTextFilePicker()
+                    showFilePicker()
                     true
                 }
                 R.id.action_export -> {
@@ -264,7 +264,7 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
         popup.show()
     }
 
-    private fun openTextFilePicker() {
+    private fun showFilePicker() {
         val mimeTypes = arrayOf("text/plain")
         importFileLauncher.launch(mimeTypes)
     }

@@ -2,6 +2,7 @@ package com.example.notepad.viewmodel
 
 import android.text.Editable
 import android.text.Spannable
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.notepad.db.entity.Category
@@ -52,7 +53,7 @@ class EditNoteViewModel(
         }
     }
 
-    fun loadTextStyle(style: TextStyle) {
+    fun updateTextStyle(style: TextStyle) {
         _textStyle.value = style
     }
 

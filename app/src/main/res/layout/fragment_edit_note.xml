@@ -106,7 +106,7 @@
                 android:inputType="textCapSentences|textMultiLine"
                 tools:ignore="Autofill,LabelFor" />
 
-            <EditText
+            <com.example.notepad.utils.StyleAwareEditText
                 android:id="@+id/et_content"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"

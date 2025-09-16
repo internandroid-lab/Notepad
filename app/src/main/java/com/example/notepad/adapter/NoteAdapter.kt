@@ -1,6 +1,7 @@
 package com.example.notepad.adapter
 
 import android.graphics.Color
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -30,7 +31,24 @@ class NoteAdapter(
         holder.bind(getItem(position))
     }
 
-    inner class NoteViewHolder(private val binding: ItemNoteBinding) : RecyclerView.ViewHolder(binding.root) {
+    override fun onBindViewHolder(holder: NoteViewHolder, position: Int, payloads: List<Any?>) {
+        if(payloads.isNotEmpty()){
+            payloads.forEach { payload ->
+                val bundle = payload as? Bundle ?: return@forEach
+
+                if (bundle.containsKey("title")) {
+                    holder.binding.tvNoteTitle.text = bundle.getString("title")
+                }
+                if (bundle.containsKey("lastEditStr")) {
+                    holder.binding.tvLastEdit.text = bundle.getString("lastEditStr")
+                }
+            }
+        } else {
+            super.onBindViewHolder(holder, position, payloads)
+        }
+    }
+
+    inner class NoteViewHolder(val binding: ItemNoteBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(note: Note) {
             binding.tvNoteTitle.text = note.title
@@ -60,6 +78,17 @@ class NoteAdapter(
 
         override fun areContentsTheSame(oldItem: Note, newItem: Note): Boolean {
             return oldItem == newItem
+        }
+
+        override fun getChangePayload(oldItem: Note, newItem: Note): Any? {
+            val bundle = Bundle()
+            if(oldItem.title != newItem.title){
+                bundle.putString("title", newItem.title)
+            }
+            if(oldItem.lastEditStr != newItem.lastEditStr){
+                bundle.putString("lastEditStr", newItem.lastEditStr)
+            }
+            return if (bundle.size()==0) null else bundle
         }
     }
 }
