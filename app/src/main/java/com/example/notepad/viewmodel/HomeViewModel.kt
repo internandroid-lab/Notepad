@@ -44,16 +44,13 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
     fun loadNotes() {
         viewModelScope.launch {
             delay(500)
-            try {
-                val notes = withContext(Dispatchers.IO) {
-                    when (currentSortType) {
-                        SortType.BY_DATE -> noteRepo.getAllNotes()
-                        SortType.BY_TITLE -> noteRepo.getAllNotesSortedByTitle()
-                    }
+            val notes = withContext(Dispatchers.IO) {
+                when (currentSortType) {
+                    SortType.BY_DATE -> noteRepo.getAllNotes()
+                    SortType.BY_TITLE -> noteRepo.getAllNotesSortedByTitle()
                 }
-                _notes.value = notes
-            } catch (e: Exception) {
             }
+            _notes.value = notes
         }
     }
 
@@ -79,13 +76,10 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
             loadNotes()
         } else {
             viewModelScope.launch {
-                try {
-                    val notes = withContext(Dispatchers.IO) {
-                        noteRepo.searchNotes(query)
-                    }
-                    _notes.value = notes
-                } catch (e: Exception) {
+                val notes = withContext(Dispatchers.IO) {
+                    noteRepo.searchNotes(query)
                 }
+                _notes.value = notes
             }
         }
     }
@@ -109,31 +103,31 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
                 noteRepo.insertNote(note)
             }
             _event.emit("1 note imported")
+            loadNotes()
         }
-        loadNotes()
     }
 
-    fun deleteSelectedNotes(){
-        if(_selectedNotes.value.isNotEmpty()){
+    fun deleteSelectedNotes() {
+        if (_selectedNotes.value.isNotEmpty()) {
             val size = _selectedNotes.value.size
             viewModelScope.launch {
                 withContext(Dispatchers.IO) {
-                    for(i in _selectedNotes.value){
+                    for (i in _selectedNotes.value) {
                         val finalNote = i.copy(onTrash = true)
                         noteRepo.updateNote(finalNote)
                     }
                 }
                 _event.emit("$size notes deleted")
+                loadNotes()
             }
             clearSelection()
-            loadNotes()
         }
     }
 
-    fun selectAll(){
-        if (_notes.value.toSet() != _selectedNotes.value){
+    fun selectAll() {
+        if (_notes.value.toSet() != _selectedNotes.value) {
             _selectedNotes.value = _notes.value.toSet()
-        }else{
+        } else {
             _selectedNotes.value = emptySet()
         }
     }

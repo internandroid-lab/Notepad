@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class TrashViewModel(private val noteRepo: NoteRepository): ViewModel() {
+class TrashViewModel(private val noteRepo: NoteRepository) : ViewModel() {
     private val _notes = MutableStateFlow<List<Note>>(emptyList())
     val notes: StateFlow<List<Note>> = _notes.asStateFlow()
 
@@ -32,29 +32,23 @@ class TrashViewModel(private val noteRepo: NoteRepository): ViewModel() {
         loadTrashNotes()
     }
 
-    fun updateNote(note: Note){
+    fun updateNote(note: Note) {
         viewModelScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    noteRepo.updateNote(note)
-                }
-            } catch (e: Exception) {
+            withContext(Dispatchers.IO) {
+                noteRepo.updateNote(note)
             }
+            loadTrashNotes()
         }
-        loadTrashNotes()
     }
 
-    fun deleteNote(note: Note){
+    fun deleteNote(note: Note) {
         viewModelScope.launch {
-            try {
-                withContext(Dispatchers.IO){
-                    noteRepo.deleteNote(note)
-                }
-                _event.emit("Note Deleted")
-            } catch (e: Exception) {
+            withContext(Dispatchers.IO) {
+                noteRepo.deleteNote(note)
             }
+            _event.emit("Note Deleted")
+            loadTrashNotes()
         }
-        loadTrashNotes()
     }
 
     fun toggleSelection(note: Note) {
@@ -73,41 +67,41 @@ class TrashViewModel(private val noteRepo: NoteRepository): ViewModel() {
         _selectedNotes.value = emptySet()
     }
 
-    fun deleteSelectedNotes(){
-        if(_selectedNotes.value.isNotEmpty()){
+    fun deleteSelectedNotes() {
+        if (_selectedNotes.value.isNotEmpty()) {
             viewModelScope.launch {
-                withContext(Dispatchers.IO){
-                    for(i in _selectedNotes.value){
+                withContext(Dispatchers.IO) {
+                    for (i in _selectedNotes.value) {
                         noteRepo.deleteNote(i)
                     }
                 }
                 _event.emit("${_selectedNotes.value.size} notes deleted")
+                loadTrashNotes()
             }
             clearSelection()
-            loadTrashNotes()
         }
     }
 
-    fun unDeleteSelectedNotes(){
-        if(_selectedNotes.value.isNotEmpty()){
+    fun unDeleteSelectedNotes() {
+        if (_selectedNotes.value.isNotEmpty()) {
             viewModelScope.launch {
                 withContext(Dispatchers.IO) {
-                    for(i in _selectedNotes.value){
+                    for (i in _selectedNotes.value) {
                         val finalNote = i.copy(onTrash = false)
                         noteRepo.updateNote(finalNote)
                     }
                 }
                 _event.emit("${_selectedNotes.value.size} notes restored")
+                loadTrashNotes()
             }
             clearSelection()
-            loadTrashNotes()
         }
     }
 
-    fun selectAll(){
-        if (_notes.value.toSet() != _selectedNotes.value){
+    fun selectAll() {
+        if (_notes.value.toSet() != _selectedNotes.value) {
             _selectedNotes.value = _notes.value.toSet()
-        }else{
+        } else {
             _selectedNotes.value = emptySet()
         }
     }
@@ -115,13 +109,10 @@ class TrashViewModel(private val noteRepo: NoteRepository): ViewModel() {
     private fun loadTrashNotes() {
         viewModelScope.launch {
             delay(500)
-            try {
-                val notes = withContext(Dispatchers.IO){
-                    noteRepo.getAllTrashedNotes()
-                }
-                _notes.value = notes
-            } catch (e: Exception){
+            val notes = withContext(Dispatchers.IO) {
+                noteRepo.getAllTrashedNotes()
             }
+            _notes.value = notes
         }
     }
 }

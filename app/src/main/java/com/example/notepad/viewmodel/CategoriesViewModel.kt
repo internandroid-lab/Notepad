@@ -35,8 +35,8 @@ class CategoriesViewModel(private val cateRepo: CategoryRepository) : ViewModel(
                 withContext(Dispatchers.IO){
                     cateRepo.insertCategory(category)
                 }
-                loadCategories()
                 _event.emit("Category added")
+                loadCategories()
             } catch (e: Exception) {
             }
         }
@@ -60,8 +60,8 @@ class CategoriesViewModel(private val cateRepo: CategoryRepository) : ViewModel(
                 withContext(Dispatchers.IO){
                     cateRepo.deleteCategory(category)
                 }
-                loadCategories()
                 _event.emit("Category deleted")
+                loadCategories()
             } catch (e: Exception) {
             }
         }

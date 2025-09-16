@@ -2,7 +2,6 @@ package com.example.notepad.viewmodel
 
 import android.text.Editable
 import android.text.Spannable
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.notepad.db.entity.Category
@@ -36,13 +35,10 @@ class EditNoteViewModel(
     fun loadNote(noteId: Long) {
         if (noteId > 0) {
             viewModelScope.launch {
-                try {
-                    val note = withContext(Dispatchers.IO) {
-                        noteRepo.getNoteById(noteId)
-                    }
-                    _note.value = note!!
-                } catch (e: Exception) {
+                val note = withContext(Dispatchers.IO) {
+                    noteRepo.getNoteById(noteId)
                 }
+                _note.value = note!!
             }
         } else {
             _note.value = Note(
@@ -110,18 +106,15 @@ class EditNoteViewModel(
         )
 
         viewModelScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    if (finalNote.noteId == 0L) {
-                        val noteId = noteRepo.insertNote(finalNote)
-                        if (categoryId > 0) {
-                            crossRefRepo.addNoteToCategory(noteId, categoryId)
-                        }
-                    } else {
-                        noteRepo.updateNote(finalNote)
+            withContext(Dispatchers.IO) {
+                if (finalNote.noteId == 0L) {
+                    val noteId = noteRepo.insertNote(finalNote)
+                    if (categoryId > 0) {
+                        crossRefRepo.addNoteToCategory(noteId, categoryId)
                     }
+                } else {
+                    noteRepo.updateNote(finalNote)
                 }
-            } catch (e: Exception) {
             }
         }
         return true
@@ -132,11 +125,8 @@ class EditNoteViewModel(
         val finalNote = currentNote.copy(onTrash = true)
 
         viewModelScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    noteRepo.updateNote(finalNote)
-                }
-            } catch (e: Exception) {
+            withContext(Dispatchers.IO) {
+                noteRepo.updateNote(finalNote)
             }
         }
     }

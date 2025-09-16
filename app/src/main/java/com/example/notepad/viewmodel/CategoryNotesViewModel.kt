@@ -126,9 +126,9 @@ class CategoryNotesViewModel(
                     }
                 }
                 _event.emit("${_selectedNotes.value.size} notes deleted")
+                loadNotesByCategory()
             }
             clearSelection()
-            loadNotesByCategory()
         }
     }
 
@@ -147,7 +147,7 @@ class CategoryNotesViewModel(
                 crossRefRepo.addNoteToCategory(noteId, _category.value.categoryId)
             }
             _event.emit("1 note imported")
+            loadNotesByCategory()
         }
-        loadNotesByCategory()
     }
 }
