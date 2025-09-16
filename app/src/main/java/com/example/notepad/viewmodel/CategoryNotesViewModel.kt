@@ -47,7 +47,7 @@ class CategoryNotesViewModel(
 
     fun loadCategory(categoryId: Long) {
         viewModelScope.launch {
-            val category = withContext(Dispatchers.IO){
+            val category = withContext(Dispatchers.IO) {
                 cateRepo.getCategoryById(categoryId)
             }
             _category.value = category!!
@@ -58,16 +58,15 @@ class CategoryNotesViewModel(
     fun loadNotesByCategory() {
         viewModelScope.launch {
             delay(500)
-            try {
-                val notes= withContext(Dispatchers.IO){
-                    when (currentSortType) {
-                        SortType.BY_DATE -> crossRefRepo.getAllNotesInCategory(_category.value.categoryId)
-                        SortType.BY_TITLE -> crossRefRepo.getAllNotesInCategorySortedByTitle(_category.value.categoryId)
-                    }
+            val notes = withContext(Dispatchers.IO) {
+                when (currentSortType) {
+                    SortType.BY_DATE -> crossRefRepo.getAllNotesInCategory(_category.value.categoryId)
+                    SortType.BY_TITLE -> crossRefRepo.getAllNotesInCategorySortedByTitle(
+                        _category.value.categoryId
+                    )
                 }
-                _notes.value = notes
-            } catch (e: Exception) {
             }
+            _notes.value = notes
         }
     }
 
@@ -76,14 +75,10 @@ class CategoryNotesViewModel(
             loadNotesByCategory()
         } else {
             viewModelScope.launch {
-                try {
-                    val searchResults = withContext(Dispatchers.IO){
-                        crossRefRepo.searchNotesInCategory(_category.value.categoryId,query)
-                    }
-                    _notes.value = searchResults
-                } catch (e: Exception) {
-                    e.printStackTrace()
+                val searchResults = withContext(Dispatchers.IO) {
+                    crossRefRepo.searchNotesInCategory(_category.value.categoryId, query)
                 }
+                _notes.value = searchResults
             }
         }
     }
@@ -95,7 +90,7 @@ class CategoryNotesViewModel(
 
     fun toggleSearchMode() {
         _isSearchMode.value = !_isSearchMode.value
-        if (!_isSearchMode.value ) {
+        if (!_isSearchMode.value) {
             loadNotesByCategory()
         }
     }
@@ -116,11 +111,11 @@ class CategoryNotesViewModel(
         _selectedNotes.value = emptySet()
     }
 
-    fun deleteSelectedNotes(){
-        if(_selectedNotes.value.isNotEmpty()){
+    fun deleteSelectedNotes() {
+        if (_selectedNotes.value.isNotEmpty()) {
             viewModelScope.launch {
                 withContext(Dispatchers.IO) {
-                    for(i in _selectedNotes.value){
+                    for (i in _selectedNotes.value) {
                         val finalNote = i.copy(onTrash = true)
                         noteRepo.updateNote(finalNote)
                     }
@@ -132,10 +127,10 @@ class CategoryNotesViewModel(
         }
     }
 
-    fun selectAll(){
-        if (_notes.value.toSet() != _selectedNotes.value){
+    fun selectAll() {
+        if (_notes.value.toSet() != _selectedNotes.value) {
             _selectedNotes.value = _notes.value.toSet()
-        }else{
+        } else {
             _selectedNotes.value = emptySet()
         }
     }

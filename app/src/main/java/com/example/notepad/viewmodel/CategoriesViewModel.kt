@@ -1,5 +1,6 @@
 package com.example.notepad.viewmodel
 
+import android.util.Log.e
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.notepad.db.entity.Category
@@ -30,52 +31,40 @@ class CategoriesViewModel(private val cateRepo: CategoryRepository) : ViewModel(
         if (name.isBlank()) return
 
         viewModelScope.launch {
-            try {
-                val category = Category(name = name.trim())
-                withContext(Dispatchers.IO){
-                    cateRepo.insertCategory(category)
-                }
-                _event.emit("Category added")
-                loadCategories()
-            } catch (e: Exception) {
+            val category = Category(name = name.trim())
+            withContext(Dispatchers.IO) {
+                cateRepo.insertCategory(category)
             }
+            _event.emit("Category added")
+            loadCategories()
         }
     }
 
     fun updateCategory(category: Category) {
         viewModelScope.launch {
-            try {
-                withContext(Dispatchers.IO){
-                    cateRepo.updateCategory(category)
-                }
-                loadCategories()
-            } catch (e: Exception) {
+            withContext(Dispatchers.IO) {
+                cateRepo.updateCategory(category)
             }
+            loadCategories()
         }
     }
 
     fun deleteCategory(category: Category) {
         viewModelScope.launch {
-            try {
-                withContext(Dispatchers.IO){
-                    cateRepo.deleteCategory(category)
-                }
-                _event.emit("Category deleted")
-                loadCategories()
-            } catch (e: Exception) {
+            withContext(Dispatchers.IO) {
+                cateRepo.deleteCategory(category)
             }
+            _event.emit("Category deleted")
+            loadCategories()
         }
     }
 
     private fun loadCategories() {
         viewModelScope.launch {
-            try {
-                val categories = withContext(Dispatchers.IO){
-                    cateRepo.getAllCategories()
-                }
-                _categories.value = categories
-            } catch (e: Exception) {
+            val categories = withContext(Dispatchers.IO) {
+                cateRepo.getAllCategories()
             }
+            _categories.value = categories
         }
     }
 }
