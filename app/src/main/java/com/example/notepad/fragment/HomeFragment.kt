@@ -212,7 +212,7 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
     }
 
     private fun showSortDialog() {
-        val sortOptions = arrayOf("Sort by Date", "Sort by Title")
+        val sortOptions = arrayOf("Sort by Date: Lastest First", "Sort by Title: A-Z")
 
         AlertDialog.Builder(requireContext())
             .setTitle("Sort Notes")
