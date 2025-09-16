@@ -75,34 +75,30 @@ class TrashFragment : Fragment() {
     }
 
     private fun setupObservers() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED){
-                viewModel.notes.collect {notes ->
-                    noteAdapter.submitList(notes)
+                launch {
+                    viewModel.notes.collect { notes ->
+                        noteAdapter.submitList(notes)
+                    }
                 }
-            }
-        }
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED){
-                viewModel.selectedNotes.collect {
-                    noteAdapter.notifyDataSetChanged()
-                    binding.tvToolbarTitle.text =  it.size.toString()
+                launch {
+                    viewModel.selectedNotes.collect {
+                        noteAdapter.notifyDataSetChanged()
+                        binding.tvToolbarTitle.text =  it.size.toString()
+                    }
                 }
-            }
-        }
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED){
-                viewModel.isSelectionMode.collect { isSelectionMode ->
-                    activity?.findViewById<View>(R.id.toolbar)?.visibility =
-                        if (isSelectionMode) View.GONE else View.VISIBLE
-                    binding.toolbar.visibility = if (isSelectionMode) View.VISIBLE else View.GONE
+                launch {
+                    viewModel.isSelectionMode.collect { isSelectionMode ->
+                        activity?.findViewById<View>(R.id.toolbar)?.visibility =
+                            if (isSelectionMode) View.GONE else View.VISIBLE
+                        binding.toolbar.visibility = if (isSelectionMode) View.VISIBLE else View.GONE
+                    }
                 }
-            }
-        }
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED){
-                viewModel.event.collect { msg ->
-                    Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+                launch {
+                    viewModel.event.collect { msg ->
+                        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }

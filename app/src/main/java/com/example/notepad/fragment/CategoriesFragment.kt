@@ -20,6 +20,7 @@ import com.example.notepad.databinding.FragmentCategoriesBinding
 import com.example.notepad.db.entity.Category
 import com.example.notepad.utils.AppUtil
 import com.example.notepad.viewmodel.CategoriesViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -77,18 +78,17 @@ class CategoriesFragment : Fragment() {
     }
 
     private fun setupObservers() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED){
-                viewModel.categories.collect {categories ->
-                    categoryAdapter.submitList(categories)
+                launch {
+                    viewModel.categories.collect { categories ->
+                        categoryAdapter.submitList(categories)
+                    }
                 }
-            }
-        }
-
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED){
-                viewModel.event.collect { msg ->
-                    Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+                launch {
+                    viewModel.event.collect { msg ->
+                        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }

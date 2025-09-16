@@ -13,11 +13,13 @@ import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import android.widget.SeekBar
+import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.widget.addTextChangedListener
@@ -99,51 +101,55 @@ class EditNoteFragment : Fragment() {
     }
 
     private fun setupObservers() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED){
-                viewModel.note.collect { note ->
-                    note.let {
-                        if (!isTitleEditing && binding.etTitle.text.toString() != it.title) {
-                            binding.etTitle.setText(it.title)
-                            val safePos = it.title.length.coerceAtMost(binding.etTitle.text?.length ?: 0)
-                            binding.etTitle.setSelection(safePos)
-                        }
+                launch {
+                    viewModel.note.collect { note ->
+                        note.let {
+                            if (!isTitleEditing && binding.etTitle.text.toString() != it.title) {
+                                binding.etTitle.setText(it.title)
+                                val safePos = it.title.length.coerceAtMost(binding.etTitle.text?.length ?: 0)
+                                binding.etTitle.setSelection(safePos)
+                            }
 
-                        if (!isContentEditing) {
-                            val spanned = it.content.toSpannable()
-                            if (binding.etContent.text.toString() != spanned.toString()) {
-                                binding.etContent.setText(spanned)
-                                val safePos = spanned.length.coerceAtMost(binding.etContent.text?.length ?: 0)
-                                binding.etContent.setSelection(safePos)
+                            if (!isContentEditing) {
+                                val spanned = it.content.toSpannable()
+                                if (binding.etContent.text.toString() != spanned.toString()) {
+                                    binding.etContent.setText(spanned)
+                                    val safePos = spanned.length.coerceAtMost(binding.etContent.text?.length ?: 0)
+                                    binding.etContent.setSelection(safePos)
 
-                                if (spanned.isNotEmpty()) {
-                                    val style = getTextStyleFromSpanned(spanned, safePos - 1)
-                                    viewModel.updateTextStyle(style)
+                                    if (spanned.isNotEmpty()) {
+                                        val style = getTextStyleFromSpanned(spanned, safePos - 1)
+                                        viewModel.updateTextStyle(style)
+                                    }
                                 }
                             }
+                            binding.group.setBackgroundColor(note.color.toColorInt())
                         }
-
                     }
                 }
 
-            }
-        }
-
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED){
-                viewModel.textStyle.collect { textStyle ->
-                    binding.btnBold.isSelected = textStyle.isBold
-                    binding.btnItalic.isSelected = textStyle.isItalic
-                    binding.btnUnderline.isSelected = textStyle.isUnderline
-                    if (textStyle.bgColor != null) {
-                        binding.btnHighligh.background = textStyle.bgColor.toDrawable()
-                    } else {
-                        binding.btnHighligh.background = null
+                launch {
+                    viewModel.textStyle.collect { textStyle ->
+                        binding.btnBold.isSelected = textStyle.isBold
+                        binding.btnItalic.isSelected = textStyle.isItalic
+                        binding.btnUnderline.isSelected = textStyle.isUnderline
+                        if (textStyle.bgColor != null) {
+                            binding.btnHighligh.background = textStyle.bgColor.toDrawable()
+                        } else {
+                            binding.btnHighligh.background = null
+                        }
+                        if (textStyle.textColor != null) {
+                            binding.btnTextColor.background = textStyle.textColor.toDrawable()
+                        } else {
+                            binding.btnTextColor.background = null
+                        }
                     }
-                    if (textStyle.textColor != null) {
-                        binding.btnTextColor.background = textStyle.textColor.toDrawable()
-                    } else {
-                        binding.btnTextColor.background = null
+                }
+                launch {
+                    viewModel.event.collect { msg ->
+                        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -301,6 +307,12 @@ class EditNoteFragment : Fragment() {
                 }
                 R.id.action_export -> {
                     exportFolderLauncher.launch(null)
+                    true
+                }
+                R.id.color -> {
+                    showColorPicker{ selectColor ->
+                        viewModel.updateColor(selectColor)
+                    }
                     true
                 }
                 else -> false
