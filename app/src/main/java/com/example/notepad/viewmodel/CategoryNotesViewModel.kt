@@ -56,9 +56,7 @@ class CategoryNotesViewModel(
             } else {
                 when (sortType) {
                     SortType.BY_DATE -> crossRefRepo.getAllNotesInCategorySortedByDate(category.categoryId)
-                    SortType.BY_TITLE -> crossRefRepo.getAllNotesInCategorySortedByTitle(
-                        category.categoryId
-                    )
+                    SortType.BY_TITLE -> crossRefRepo.getAllNotesInCategorySortedByTitle(category.categoryId)
                 }
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())

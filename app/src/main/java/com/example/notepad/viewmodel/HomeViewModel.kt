@@ -38,16 +38,16 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
     val notes: StateFlow<List<Note>> =
         combine(_searchQuery,_currentSortType){ query, sortType ->
             if(query.isNotBlank()){
+                noteRepo.searchNotes(query)
+            } else {
                 when(sortType){
                     SortType.BY_DATE -> noteRepo.getAllNotesSortedByDate()
                     SortType.BY_TITLE -> noteRepo.getAllNotesSortedByTitle()
                 }
-            } else {
-                noteRepo.searchNotes(query)
             }
         }
         .flatMapLatest { it }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     fun toggleSelection(note: Note) {
         val current = _selectedNotes.value
