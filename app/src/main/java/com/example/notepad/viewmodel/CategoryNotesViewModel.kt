@@ -49,8 +49,6 @@ class CategoryNotesViewModel(
     private val _notes = MutableStateFlow<List<Note>>(emptyList())
     val notes: StateFlow<List<Note>> =
         combine(_category.filterNotNull(),_searchQuery,_currentSortType){ category, query, sortType ->
-            Triple(category, query, sortType)
-        }.flatMapLatest { (category, query, sortType) ->
             if(query.isNotBlank()){
                 crossRefRepo.searchNotesInCategory(category.categoryId, query)
             } else {
@@ -59,7 +57,8 @@ class CategoryNotesViewModel(
                     SortType.BY_TITLE -> crossRefRepo.getAllNotesInCategorySortedByTitle(category.categoryId)
                 }
             }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(1000,0), emptyList())
+        }.flatMapLatest { it }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(1000,0), emptyList())
 
     fun loadCategory(categoryId: Long) {
         viewModelScope.launch {
