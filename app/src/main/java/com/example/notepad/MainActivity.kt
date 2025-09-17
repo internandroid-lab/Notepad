@@ -146,6 +146,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_trash -> R.id.trashFragment
                 else -> {
                     val bundle = bundleOf("categoryId" to menuItem.itemId.toLong())
+                    navController.popBackStack(R.id.categoryNotesFragment, true)
                     navController.navigate(
                         R.id.categoryNotesFragment,
                         bundle
