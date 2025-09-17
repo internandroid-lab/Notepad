@@ -88,15 +88,12 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
     }
 
     fun deleteSelectedNotes() {
-        Log.d("MTHAI", "deleteSelectedNotes: 1")
         if (_selectedNotes.value.isNotEmpty()) {
             viewModelScope.launch {
                 for (i in _selectedNotes.value) {
                     val finalNote = i.copy(onTrash = true)
                     noteRepo.updateNote(finalNote)
                 }
-                Log.d("MTHAI", "deleteSelectedNotes: 2")
-
                 _event.emit("${_selectedNotes.value.size} notes deleted")
                 clearSelection()
             }
