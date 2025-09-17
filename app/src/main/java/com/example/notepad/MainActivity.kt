@@ -1,8 +1,10 @@
 package com.example.notepad
 
+import android.R.attr.category
 import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
@@ -13,6 +15,16 @@ import androidx.navigation.fragment.NavHostFragment
 import com.example.notepad.databinding.ActivityMainBinding
 import com.example.notepad.utils.AppUtil
 import androidx.activity.addCallback
+import androidx.core.os.bundleOf
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.NavHostFragment.Companion.findNavController
+import androidx.navigation.fragment.findNavController
+import com.example.notepad.db.entity.Category
+import com.example.notepad.viewmodel.MainViewModel
+import kotlinx.coroutines.launch
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,6 +32,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var navController: NavController
     private var currentFragment: String = "Home"
     private var isSearchMode = false
+
+    private val viewModel: MainViewModel by viewModel()
 
     interface ToolbarController {
         fun onSearchClick()
@@ -40,10 +54,23 @@ class MainActivity : AppCompatActivity() {
 
         setupNavigation()
         setupToolbar()
+        setupObservers()
         setupNavigationDrawer()
         setupBackPressHandler()
 
         AppUtil.setupKeyboardHiderForAllViews(binding.root)
+    }
+
+    private fun setupObservers() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                lifecycleScope.launch {
+                    viewModel.categories.collect { categories ->
+                        updateCategoriesInDrawer(categories)
+                    }
+                }
+            }
+        }
     }
 
     private fun setupNavigation() {
@@ -120,7 +147,14 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_notes -> R.id.homeFragment
                 R.id.nav_categories -> R.id.categoriesFragment
                 R.id.nav_trash -> R.id.trashFragment
-                else -> -1
+                else -> {
+                    val bundle = bundleOf("categoryId" to menuItem.itemId.toLong())
+                    navController.navigate(
+                        R.id.categoryNotesFragment,
+                        bundle
+                    )
+                    -1
+                }
             }
 
             if (destinationId != -1) {
@@ -136,6 +170,34 @@ class MainActivity : AppCompatActivity() {
         }
         binding.navigationView.setCheckedItem(R.id.nav_notes)
     }
+
+    private fun updateCategoriesInDrawer(categories: List<Category>) {
+        val menu = binding.navigationView.menu
+
+        menu.removeGroup(R.id.group_categories)
+        menu.removeGroup(R.id.group_trash)
+
+        menu.add(
+            R.id.group_categories,
+            R.id.nav_categories,
+            Menu.NONE,
+            getString(R.string.categories)
+        ).setIcon(R.drawable.ic_category)
+            .isCheckable = true
+
+        categories.forEach { category ->
+            menu.add(R.id.group_categories, category.categoryId.toInt(), Menu.NONE, category.name)
+                .isCheckable = true
+        }
+        menu.add(
+            R.id.group_trash,
+            R.id.nav_trash,
+            Menu.NONE,
+            getString(R.string.trash)
+        ).setIcon(R.drawable.ic_trash)
+        .isCheckable = true
+    }
+
 
     private fun showToolbarActions(show: Boolean) {
         binding.ivSearch.visibility = if (show) View.VISIBLE else View.GONE

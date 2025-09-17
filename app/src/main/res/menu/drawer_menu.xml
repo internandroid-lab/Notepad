@@ -1,17 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group android:checkableBehavior="single">
+    <group
+        android:checkableBehavior="single">
         <item
             android:id="@+id/nav_notes"
             android:title="@string/app_name"
             android:icon="@drawable/ic_notes" />
 
+    </group>
+
+    <group
+        android:checkableBehavior="single"
+        android:id="@+id/group_categories">
         <item
             android:id="@+id/nav_categories"
             android:icon="@drawable/ic_category"
             android:title="@string/categories" />
 
+    </group>
+
+    <group
+        android:id="@+id/group_trash"
+        android:checkableBehavior="single">
         <item
             android:id="@+id/nav_trash"
             android:icon="@drawable/ic_trash"

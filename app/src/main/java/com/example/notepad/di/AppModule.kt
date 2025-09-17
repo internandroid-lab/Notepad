@@ -13,6 +13,7 @@ import com.example.notepad.viewmodel.CategoriesViewModel
 import com.example.notepad.viewmodel.CategoryNotesViewModel
 import com.example.notepad.viewmodel.EditNoteViewModel
 import com.example.notepad.viewmodel.HomeViewModel
+import com.example.notepad.viewmodel.MainViewModel
 import com.example.notepad.viewmodel.TrashViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -33,6 +34,7 @@ val appModule = module{
     single<NoteRepository> { NoteRepository(get(),get()) }
     single<CategoryRepository> { CategoryRepository(get(),get()) }
     single<CrossReferenceRepository> { CrossReferenceRepository(get()) }
+    viewModel { MainViewModel(get()) }
     viewModel { HomeViewModel(get()) }
     viewModel { EditNoteViewModel(get(),get(),get()) }
     viewModel { CategoriesViewModel(get()) }
