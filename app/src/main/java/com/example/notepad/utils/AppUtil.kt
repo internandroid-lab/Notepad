@@ -2,31 +2,36 @@ package com.example.notepad.utils
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Typeface
 import android.net.Uri
 import android.os.Parcel
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
-import android.text.Editable
-import android.text.Html
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.TextUtils
-import android.text.style.AbsoluteSizeSpan
-import android.text.style.BackgroundColorSpan
-import android.text.style.ForegroundColorSpan
-import android.text.style.StyleSpan
-import android.text.style.UnderlineSpan
 import android.util.Base64
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
+import androidx.core.content.edit
 import com.example.notepad.db.entity.Note
-import org.xml.sax.XMLReader
 
 object AppUtil {
+    private const val FORMAT_STATE = "FORMAT_STATE"
+
+    fun saveFormatState(context: Context, state: Boolean) {
+        val sharedPref = context.getSharedPreferences(FORMAT_STATE, Context.MODE_PRIVATE)
+        sharedPref.edit { putBoolean(FORMAT_STATE, state) }
+    }
+
+    fun getFormatState(context: Context): Boolean {
+        val sharedPref = context.getSharedPreferences(FORMAT_STATE, Context.MODE_PRIVATE)
+        val formatState = sharedPref.getBoolean(FORMAT_STATE, false)
+        return formatState
+    }
+
     fun hideKeyboard(view: View) {
         val imm = view.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(view.windowToken, 0)
@@ -101,7 +106,7 @@ object AppUtil {
 
             if (fileUri != null) {
                 resolver.openOutputStream(fileUri)?.use { outputStream ->
-                    val content = note.content ?: ""
+                    val content = note.content
                     outputStream.write(content.toByteArray())
                     outputStream.flush()
                 }

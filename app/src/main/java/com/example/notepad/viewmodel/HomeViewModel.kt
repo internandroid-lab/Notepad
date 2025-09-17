@@ -47,7 +47,7 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
             }
         }
         .flatMapLatest { it }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(1000,0), emptyList())
 
     fun toggleSelection(note: Note) {
         val current = _selectedNotes.value

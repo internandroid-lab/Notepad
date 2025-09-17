@@ -59,7 +59,7 @@ class CategoryNotesViewModel(
                     SortType.BY_TITLE -> crossRefRepo.getAllNotesInCategorySortedByTitle(category.categoryId)
                 }
             }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(1000,0), emptyList())
 
     fun loadCategory(categoryId: Long) {
         viewModelScope.launch {

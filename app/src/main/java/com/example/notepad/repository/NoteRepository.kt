@@ -1,5 +1,6 @@
 package com.example.notepad.repository
 
+import android.util.Log
 import com.example.notepad.db.dao.CrossReferenceDao
 import com.example.notepad.db.entity.Note
 import com.example.notepad.db.dao.NoteDao
@@ -12,7 +13,10 @@ class NoteRepository(private val noteDao: NoteDao, private val crossRef: CrossRe
     suspend fun insertNote(note: Note): Long =
         withContext(Dispatchers.IO) { noteDao.insertNote(note) }
 
-    fun getAllNotesSortedByDate(): Flow<List<Note>> = noteDao.getAllNotesSortedByDate()
+    fun getAllNotesSortedByDate(): Flow<List<Note>>  {
+        Log.d("dmh", "getAllNotesSortedByDate")
+        return noteDao.getAllNotesSortedByDate()
+    }
 
     fun getAllNotesSortedByTitle(): Flow<List<Note>> = noteDao.getAllNotesSortedByTitle()
 

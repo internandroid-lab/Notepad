@@ -7,6 +7,9 @@
         android:id="@+id/color"
         android:title="@string/color" />
     <item
+        android:id="@+id/format"
+        android:title="@string/show_formatting" />
+    <item
         android:id="@+id/add_to_category"
         android:title="@string/add_to_categories" />
     <item

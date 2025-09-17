@@ -31,4 +31,5 @@
     <string name="add_to_categories">Add to categories</string>
     <string name="undelete">Undelete</string>
     <string name="color">Color</string>
+    <string name="show_formatting">Show formatting</string>
 </resources>

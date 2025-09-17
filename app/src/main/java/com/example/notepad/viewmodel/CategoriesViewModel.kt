@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 class CategoriesViewModel(private val cateRepo: CategoryRepository) : ViewModel() {
 
     val categories: StateFlow<List<Category>> =
-        cateRepo.getAllCategories().stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+        cateRepo.getAllCategories().stateIn(viewModelScope, SharingStarted.WhileSubscribed(1000,0), emptyList())
 
     private val _event = MutableSharedFlow<String>()
     val event: SharedFlow<String> = _event.asSharedFlow()

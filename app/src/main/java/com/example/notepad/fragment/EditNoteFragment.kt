@@ -67,9 +67,9 @@ class EditNoteFragment : Fragment() {
         val noteId = arguments?.getLong("noteId", 0L) ?: 0L
         val cateId = arguments?.getLong("categoryId") ?: -1L
         categoryId = cateId
-        if(noteId==0L){
-            binding.ivAbout.visibility=View.GONE
-        }
+
+        val formatState = AppUtil.getFormatState(requireContext())
+        binding.groupFormat.visibility = if (formatState) View.VISIBLE else View.GONE
 
         setupObservers()
         setupClickListeners()
@@ -287,11 +287,22 @@ class EditNoteFragment : Fragment() {
                 viewModel.toggleTextSize(it)
             }
         }
+
+        binding.btnCloseFormat.setOnClickListener {
+            binding.groupFormat.visibility = View.GONE
+            AppUtil.saveFormatState(requireContext(),false)
+        }
     }
 
     private fun showEditMenu() {
         val popup = PopupMenu(requireContext(), requireActivity().findViewById(R.id.iv_about))
         popup.menuInflater.inflate(R.menu.edit_menu, popup.menu)
+
+        if(viewModel.note.value.noteId==0L){
+            popup.menu.findItem(R.id.action_delete).isVisible = false
+            popup.menu.findItem(R.id.add_to_category).isVisible = false
+            popup.menu.findItem(R.id.action_export).isVisible = false
+        }
 
         popup.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
@@ -312,6 +323,11 @@ class EditNoteFragment : Fragment() {
                     showColorPicker{ selectColor ->
                         viewModel.updateColor(selectColor)
                     }
+                    true
+                }
+                R.id.format ->{
+                    binding.groupFormat.visibility = View.VISIBLE
+                    AppUtil.saveFormatState(requireContext(),true)
                     true
                 }
                 else -> false

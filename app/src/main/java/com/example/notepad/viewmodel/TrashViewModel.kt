@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 
 class TrashViewModel(private val noteRepo: NoteRepository) : ViewModel() {
     val notes: StateFlow<List<Note>> =
-        noteRepo.getAllTrashedNotes().stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+        noteRepo.getAllTrashedNotes().stateIn(viewModelScope, SharingStarted.WhileSubscribed(1000,0), emptyList())
 
     private val _isSelectionMode = MutableStateFlow(false)
     val isSelectionMode: StateFlow<Boolean> = _isSelectionMode.asStateFlow()
