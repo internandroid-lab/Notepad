@@ -295,7 +295,7 @@ class EditNoteFragment : Fragment() {
     }
 
     private fun showEditMenu() {
-        val popup = PopupMenu(requireContext(), requireActivity().findViewById(R.id.iv_about))
+        val popup = PopupMenu(requireContext(), binding.ivAbout)
         popup.menuInflater.inflate(R.menu.edit_menu, popup.menu)
 
         if(viewModel.note.value.noteId==0L){
