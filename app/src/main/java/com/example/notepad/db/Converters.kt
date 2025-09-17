@@ -1,9 +1,7 @@
 package com.example.notepad.db
 
 import androidx.room.TypeConverter
-import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 
 class Converters {
     @TypeConverter

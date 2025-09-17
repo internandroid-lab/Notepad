@@ -1,16 +1,10 @@
 package com.example.notepad
 
 import android.app.AlertDialog
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.provider.OpenableColumns
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.PopupMenu
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.core.widget.addTextChangedListener
@@ -19,7 +13,6 @@ import androidx.navigation.fragment.NavHostFragment
 import com.example.notepad.databinding.ActivityMainBinding
 import com.example.notepad.utils.AppUtil
 import androidx.activity.addCallback
-import androidx.activity.result.contract.ActivityResultContracts
 
 class MainActivity : AppCompatActivity() {
 
@@ -158,7 +151,7 @@ class MainActivity : AppCompatActivity() {
             binding.tvTitle.visibility = View.GONE
             binding.etSearch.requestFocus()
             binding.ivSearch.setImageResource(R.drawable.ic_close)
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
             imm.showSoftInput(binding.etSearch, InputMethodManager.SHOW_IMPLICIT)
         } else {
             exitSearchMode()
