@@ -1,24 +1,22 @@
 package com.example.notepad
 
-import android.app.AlertDialog
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.core.view.GravityCompat
 import androidx.core.widget.addTextChangedListener
-import androidx.navigation.NavController
-import androidx.navigation.fragment.NavHostFragment
-import com.example.notepad.databinding.ActivityMainBinding
-import com.example.notepad.utils.AppUtil
-import androidx.activity.addCallback
-import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
+import com.example.notepad.databinding.ActivityMainBinding
 import com.example.notepad.db.entity.Category
+import com.example.notepad.utils.AppUtil
 import com.example.notepad.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -27,17 +25,12 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
-    private var currentFragment: String = "Home"
-    private var isSearchMode = false
 
     private val viewModel: MainViewModel by viewModel()
 
     interface ToolbarController {
-        fun onSearchClick()
         fun onSortClick()
         fun onSearchTextChanged(query: String)
-        fun updateTitle(title: String)
-        fun showSearchField(show: Boolean)
         fun onAboutClick()
     }
 
@@ -58,56 +51,40 @@ class MainActivity : AppCompatActivity() {
         AppUtil.setupKeyboardHiderForAllViews(binding.root)
     }
 
+    fun setToolbarController(controller: ToolbarController?) {
+        toolbarController = controller
+    }
+
+    fun toggleSearchMode() {
+        viewModel.toggleSearchMode()
+    }
+
     private fun setupObservers() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED){
-                lifecycleScope.launch {
+                launch {
                     viewModel.categories.collect { categories ->
                         updateCategoriesInDrawer(categories)
                     }
                 }
-            }
-        }
-    }
-
-    private fun setupNavigation() {
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        navController = navHostFragment.navController
-
-        navController.addOnDestinationChangedListener { _, destination, _ ->
-            when (destination.id) {
-                R.id.homeFragment -> {
-                    currentFragment = "Home"
-                    binding.tvTitle.text = getString(R.string.app_name)
-                    showToolbarActions(true)
-                    binding.navigationView.setCheckedItem(R.id.nav_notes)
-                }
-
-                R.id.categoriesFragment -> {
-                    currentFragment = "Categories"
-                    binding.tvTitle.text = getString(R.string.categories)
-                    showToolbarActions(false)
-                    binding.navigationView.setCheckedItem(R.id.nav_categories)
-                }
-
-                R.id.categoryNotesFragment -> {
-                    currentFragment = "Category Notes"
-                    showToolbarActions(true)
-                }
-
-                R.id.editNoteFragment -> {
-                    currentFragment = "Edit Note"
-                    showToolbarActions(false)
-                }
-                R.id.trashFragment -> {
-                    currentFragment = "Trash"
-                    binding.tvTitle.text = getString(R.string.trash)
-                    showToolbarActions(false)
-                    binding.navigationView.setCheckedItem(R.id.nav_trash)
+                launch {
+                    viewModel.isSearchMode.collect { isSearchMode ->
+                        if (isSearchMode) {
+                            binding.etSearch.visibility = View.VISIBLE
+                            binding.tvTitle.visibility = View.GONE
+                            binding.etSearch.requestFocus()
+                            binding.ivSearch.setImageResource(R.drawable.ic_close)
+                            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                            imm.showSoftInput(binding.etSearch, InputMethodManager.SHOW_IMPLICIT)
+                        } else {
+                            binding.etSearch.visibility = View.GONE
+                            binding.tvTitle.visibility = View.VISIBLE
+                            binding.etSearch.text.clear()
+                            binding.ivSearch.setImageResource(R.drawable.ic_search)
+                        }
+                    }
                 }
             }
-            exitSearchMode()
         }
     }
 
@@ -121,20 +98,58 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.ivSearch.setOnClickListener {
-            toolbarController?.onSearchClick() ?: toggleSearchMode()
+            toggleSearchMode()
         }
 
         binding.ivSort.setOnClickListener {
-            toolbarController?.onSortClick() ?: showSortDialog()
+            toolbarController?.onSortClick()
         }
 
         binding.ivAbout.setOnClickListener {
             toolbarController?.onAboutClick()
         }
 
-
         binding.etSearch.addTextChangedListener { text ->
             toolbarController?.onSearchTextChanged(text.toString())
+        }
+    }
+
+    private fun setupNavigation() {
+        val navHostFragment = supportFragmentManager
+            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        navController = navHostFragment.navController
+
+        navController.addOnDestinationChangedListener { _, destination, arguments ->
+            when (destination.id) {
+                R.id.homeFragment -> {
+                    binding.tvTitle.text = getString(R.string.app_name)
+                    showToolbarActions(true)
+                    binding.navigationView.setCheckedItem(R.id.nav_notes)
+                }
+
+                R.id.categoriesFragment -> {
+                    binding.tvTitle.text = getString(R.string.categories)
+                    showToolbarActions(false)
+                    binding.navigationView.setCheckedItem(R.id.nav_categories)
+                }
+
+                R.id.categoryNotesFragment -> {
+                    showToolbarActions(true)
+                    val categoryId = arguments?.getLong("categoryId") ?: -1L
+                    val category = viewModel.categories.value.find { it.categoryId == categoryId }
+                    binding.tvTitle.text = "Notepad\n${category?.name}"
+                    showToolbarActions(true)
+                }
+
+                R.id.editNoteFragment -> {
+                    showToolbarActions(false)
+                }
+                R.id.trashFragment -> {
+                    binding.tvTitle.text = getString(R.string.trash)
+                    showToolbarActions(false)
+                    binding.navigationView.setCheckedItem(R.id.nav_trash)
+                }
+            }
         }
     }
 
@@ -164,6 +179,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             binding.drawerLayout.closeDrawer(GravityCompat.START)
+            viewModel.exitSearchMode()
             true
         }
         binding.navigationView.setCheckedItem(R.id.nav_notes)
@@ -204,67 +220,17 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun toggleSearchMode() {
-        isSearchMode = !isSearchMode
-        if (isSearchMode) {
-            binding.etSearch.visibility = View.VISIBLE
-            binding.tvTitle.visibility = View.GONE
-            binding.etSearch.requestFocus()
-            binding.ivSearch.setImageResource(R.drawable.ic_close)
-            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.showSoftInput(binding.etSearch, InputMethodManager.SHOW_IMPLICIT)
-        } else {
-            exitSearchMode()
-        }
-    }
-
-    private fun exitSearchMode() {
-        if (isSearchMode) {
-            isSearchMode = false
-            binding.etSearch.visibility = View.GONE
-            binding.tvTitle.visibility = View.VISIBLE
-            binding.etSearch.text.clear()
-            binding.ivSearch.setImageResource(R.drawable.ic_search)
-        }
-    }
-
-    private fun showSortDialog() {
-        val sortOptions = arrayOf("Sort by Date", "Sort by Title")
-        AlertDialog.Builder(this)
-            .setTitle("Sort Notes")
-            .setItems(sortOptions) { _, which ->
-                Log.d("Sort Dialog","Selected: ${sortOptions[which]}")
-            }
-            .show()
-    }
-
     private fun setupBackPressHandler() {
         onBackPressedDispatcher.addCallback(this) {
             if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
                 binding.drawerLayout.closeDrawer(GravityCompat.START)
-            } else if (isSearchMode) {
-                exitSearchMode()
+            } else if (viewModel.isSearchMode.value) {
+                viewModel.toggleSearchMode()
             } else {
                 isEnabled = false
                 onBackPressedDispatcher.onBackPressed()
                 isEnabled = true
             }
-        }
-    }
-
-    fun setToolbarController(controller: ToolbarController?) {
-        toolbarController = controller
-    }
-
-    fun updateToolbarTitle(title: String) {
-        binding.tvTitle.text = title
-    }
-
-    fun showSearchField(show: Boolean) {
-        if (show && !isSearchMode) {
-            toggleSearchMode()
-        } else if (!show && isSearchMode) {
-            exitSearchMode()
         }
     }
 

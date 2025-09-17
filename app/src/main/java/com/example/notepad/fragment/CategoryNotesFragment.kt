@@ -72,24 +72,12 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
         _binding = null
     }
 
-    override fun onSearchClick() {
-        viewModel.toggleSearchMode()
-    }
-
     override fun onSortClick() {
         showSortDialog()
     }
 
     override fun onSearchTextChanged(query: String) {
         viewModel.searchNotes(query)
-    }
-
-    override fun updateTitle(title: String) {
-        (activity as? MainActivity)?.updateToolbarTitle(title)
-    }
-
-    override fun showSearchField(show: Boolean) {
-        (activity as? MainActivity)?.showSearchField(show)
     }
 
     override fun onAboutClick() {
@@ -136,16 +124,6 @@ class CategoryNotesFragment : Fragment(), MainActivity.ToolbarController {
                 launch {
                     viewModel.notes.collect { notes ->
                         noteAdapter.submitList(notes)
-                    }
-                }
-                launch {
-                    viewModel.category.collect { category ->
-                        (activity as? MainActivity)?.updateToolbarTitle("Notepad\n${category?.name}")
-                    }
-                }
-                launch {
-                    viewModel.isSearchMode.collect { isSearchMode ->
-                        (activity as? MainActivity)?.showSearchField(isSearchMode)
                     }
                 }
                 launch {

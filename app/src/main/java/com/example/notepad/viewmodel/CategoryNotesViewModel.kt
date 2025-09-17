@@ -28,7 +28,6 @@ class CategoryNotesViewModel(
 ) : ViewModel() {
 
     private val _category = MutableStateFlow<Category?>(null)
-    val category: StateFlow<Category?> = _category.asStateFlow()
 
     private val _isSearchMode = MutableStateFlow(false)
     val isSearchMode: StateFlow<Boolean> = _isSearchMode.asStateFlow()
@@ -46,7 +45,6 @@ class CategoryNotesViewModel(
 
     private val _currentSortType = MutableStateFlow(SortType.BY_DATE)
 
-    private val _notes = MutableStateFlow<List<Note>>(emptyList())
     val notes: StateFlow<List<Note>> =
         combine(_category.filterNotNull(),_searchQuery,_currentSortType){ category, query, sortType ->
             if(query.isNotBlank()){
@@ -72,13 +70,6 @@ class CategoryNotesViewModel(
 
     fun sortNotes(sortType: SortType) {
         _currentSortType.value = sortType
-    }
-
-    fun toggleSearchMode() {
-        _isSearchMode.value = !_isSearchMode.value
-        if (!_isSearchMode.value) {
-            _searchQuery.value = ""
-        }
     }
 
     fun toggleSelection(note: Note) {
@@ -111,11 +102,12 @@ class CategoryNotesViewModel(
     }
 
     fun selectAll() {
-        if (_notes.value.toSet() != _selectedNotes.value) {
-            _selectedNotes.value = _notes.value.toSet()
-        } else {
-            _selectedNotes.value = emptySet()
-        }
+        _selectedNotes.value =
+            if (notes.value.toSet() != _selectedNotes.value) {
+                notes.value.toSet()
+            } else {
+                emptySet()
+            }
     }
 
     fun importNote(note: Note) {

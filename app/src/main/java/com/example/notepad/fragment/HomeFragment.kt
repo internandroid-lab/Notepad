@@ -70,10 +70,6 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
         _binding = null
     }
 
-    override fun onSearchClick() {
-        viewModel.toggleSearchMode()
-    }
-
     override fun onSortClick() {
         showSortDialog()
     }
@@ -82,18 +78,9 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
         viewModel.searchNotes(query)
     }
 
-    override fun updateTitle(title: String) {
-        (activity as? MainActivity)?.updateToolbarTitle(title)
-    }
-
-    override fun showSearchField(show: Boolean) {
-        (activity as? MainActivity)?.showSearchField(show)
-    }
-
     override fun onAboutClick() {
         showAboutPopupMenu()
     }
-
 
     private fun setupRecyclerView() {
         noteAdapter = NoteAdapter(
@@ -134,11 +121,6 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
                 launch {
                     viewModel.notes.collect { notes ->
                         noteAdapter.submitList(notes)
-                    }
-                }
-                launch {
-                    viewModel.isSearchMode.collect { isSearchMode ->
-                        (activity as? MainActivity)?.showSearchField(isSearchMode)
                     }
                 }
                 launch {

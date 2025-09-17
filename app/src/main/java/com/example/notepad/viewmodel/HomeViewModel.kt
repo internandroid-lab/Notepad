@@ -1,6 +1,5 @@
 package com.example.notepad.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.notepad.db.entity.Note
@@ -19,8 +18,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
-    private val _isSearchMode = MutableStateFlow(false)
-    val isSearchMode: StateFlow<Boolean> = _isSearchMode.asStateFlow()
 
     private val _isSelectionMode = MutableStateFlow(false)
     val isSelectionMode: StateFlow<Boolean> = _isSelectionMode.asStateFlow()
@@ -67,13 +64,6 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
 
     fun searchNotes(query: String) {
         _searchQuery.value = query
-    }
-
-    fun toggleSearchMode() {
-        _isSearchMode.value = !_isSearchMode.value
-        if (!_isSearchMode.value) {
-            _searchQuery.value = ""
-        }
     }
 
     fun sortNotes(sortType: SortType) {
