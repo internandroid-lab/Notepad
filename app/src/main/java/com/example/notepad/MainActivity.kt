@@ -1,6 +1,5 @@
 package com.example.notepad
 
-import android.R.attr.category
 import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
@@ -19,8 +18,6 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.fragment.NavHostFragment.Companion.findNavController
-import androidx.navigation.fragment.findNavController
 import com.example.notepad.db.entity.Category
 import com.example.notepad.viewmodel.MainViewModel
 import kotlinx.coroutines.launch

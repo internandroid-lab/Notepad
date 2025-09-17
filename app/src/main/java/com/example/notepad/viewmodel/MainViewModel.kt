@@ -6,7 +6,6 @@ import com.example.notepad.db.entity.Category
 import com.example.notepad.repository.CategoryRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 
 class MainViewModel(private val cateRepo: CategoryRepository) : ViewModel() {
