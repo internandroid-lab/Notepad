@@ -1,9 +1,9 @@
-package com.example.notepad.viewmodel
+package com.example.notepad.fragment.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.notepad.db.entity.Note
-import com.example.notepad.repository.NoteRepository
+import com.example.notepad.repository.implement.NoteRepositoryImpl
 import com.example.notepad.utils.SortType
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
+class HomeViewModel(private val noteRepo: NoteRepositoryImpl) : ViewModel() {
 
     private val _isSelectionMode = MutableStateFlow(false)
     val isSelectionMode: StateFlow<Boolean> = _isSelectionMode.asStateFlow()
@@ -33,18 +33,18 @@ class HomeViewModel(private val noteRepo: NoteRepository) : ViewModel() {
     private val _currentSortType = MutableStateFlow(SortType.BY_DATE)
 
     val notes: StateFlow<List<Note>> =
-        combine(_searchQuery,_currentSortType){ query, sortType ->
-            if(query.isNotBlank()){
+        combine(_searchQuery, _currentSortType) { query, sortType ->
+            if (query.isNotBlank()) {
                 noteRepo.searchNotes(query)
             } else {
-                when(sortType){
+                when (sortType) {
                     SortType.BY_DATE -> noteRepo.getAllNotesSortedByDate()
                     SortType.BY_TITLE -> noteRepo.getAllNotesSortedByTitle()
                 }
             }
         }
-        .flatMapLatest { it }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(1000,0), emptyList())
+            .flatMapLatest { it }
+            .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(1000, 0), emptyList())
 
     fun toggleSelection(note: Note) {
         val current = _selectedNotes.value

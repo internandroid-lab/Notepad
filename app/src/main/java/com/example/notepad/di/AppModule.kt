@@ -1,20 +1,20 @@
 package com.example.notepad.di
 
 import androidx.room.Room
+import androidx.room.RoomDatabase
 import com.example.notepad.db.AppDatabase
-import com.example.notepad.db.MIGRATION
 import com.example.notepad.db.dao.CategoryDao
 import com.example.notepad.db.dao.CrossReferenceDao
 import com.example.notepad.db.dao.NoteDao
-import com.example.notepad.repository.CategoryRepository
-import com.example.notepad.repository.CrossReferenceRepository
-import com.example.notepad.repository.NoteRepository
-import com.example.notepad.viewmodel.CategoriesViewModel
-import com.example.notepad.viewmodel.CategoryNotesViewModel
-import com.example.notepad.viewmodel.EditNoteViewModel
-import com.example.notepad.viewmodel.HomeViewModel
-import com.example.notepad.viewmodel.MainViewModel
-import com.example.notepad.viewmodel.TrashViewModel
+import com.example.notepad.repository.implement.CategoryRepositoryImpl
+import com.example.notepad.repository.implement.CrossReferenceRepositoryImpl
+import com.example.notepad.repository.implement.NoteRepositoryImpl
+import com.example.notepad.fragment.categories.CategoriesViewModel
+import com.example.notepad.fragment.categorynotes.CategoryNotesViewModel
+import com.example.notepad.fragment.editnote.EditNoteViewModel
+import com.example.notepad.fragment.home.HomeViewModel
+import com.example.notepad.activities.main.MainViewModel
+import com.example.notepad.fragment.trash.TrashViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -25,15 +25,16 @@ val appModule = module{
             androidContext(),
             AppDatabase::class.java,
             "appdb"
-        ).addMigrations(MIGRATION).build()
+        ).addCallback(object : RoomDatabase.Callback() {})
+        .build()
     }
 
     single<NoteDao> { get<AppDatabase>().noteDao() }
     single<CategoryDao> { get<AppDatabase>().categoryDao() }
     single<CrossReferenceDao> { get<AppDatabase>().crossRefDao() }
-    single<NoteRepository> { NoteRepository(get(),get()) }
-    single<CategoryRepository> { CategoryRepository(get(),get()) }
-    single<CrossReferenceRepository> { CrossReferenceRepository(get()) }
+    single<NoteRepositoryImpl> { NoteRepositoryImpl(get(),get()) }
+    single<CategoryRepositoryImpl> { CategoryRepositoryImpl(get(),get()) }
+    single<CrossReferenceRepositoryImpl> { CrossReferenceRepositoryImpl(get()) }
     viewModel { MainViewModel(get()) }
     viewModel { HomeViewModel(get()) }
     viewModel { EditNoteViewModel(get(),get(),get()) }

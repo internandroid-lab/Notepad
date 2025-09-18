@@ -14,7 +14,7 @@ data class Note(
     val lastEdit: Date = Date(),
     val color: String = "#FFFFFF",
     val onTrash: Boolean = false
-){
+) {
     val lastEditStr: String
         get() {
             val formatter = SimpleDateFormat("dd/MM/yyyy, hh:mm a", Locale.getDefault())

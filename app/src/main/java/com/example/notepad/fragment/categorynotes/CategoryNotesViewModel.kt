@@ -1,12 +1,12 @@
-package com.example.notepad.viewmodel
+package com.example.notepad.fragment.categorynotes
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.notepad.db.entity.Category
 import com.example.notepad.db.entity.Note
-import com.example.notepad.repository.CategoryRepository
-import com.example.notepad.repository.CrossReferenceRepository
-import com.example.notepad.repository.NoteRepository
+import com.example.notepad.repository.implement.CategoryRepositoryImpl
+import com.example.notepad.repository.implement.CrossReferenceRepositoryImpl
+import com.example.notepad.repository.implement.NoteRepositoryImpl
 import com.example.notepad.utils.SortType
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,9 +22,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class CategoryNotesViewModel(
-    private val cateRepo: CategoryRepository,
-    private val noteRepo: NoteRepository,
-    private val crossRefRepo: CrossReferenceRepository
+    private val cateRepo: CategoryRepositoryImpl,
+    private val noteRepo: NoteRepositoryImpl,
+    private val crossRefRepo: CrossReferenceRepositoryImpl
 ) : ViewModel() {
 
     private val _category = MutableStateFlow<Category?>(null)
@@ -46,8 +46,12 @@ class CategoryNotesViewModel(
     private val _currentSortType = MutableStateFlow(SortType.BY_DATE)
 
     val notes: StateFlow<List<Note>> =
-        combine(_category.filterNotNull(),_searchQuery,_currentSortType){ category, query, sortType ->
-            if(query.isNotBlank()){
+        combine(
+            _category.filterNotNull(),
+            _searchQuery,
+            _currentSortType
+        ) { category, query, sortType ->
+            if (query.isNotBlank()) {
                 crossRefRepo.searchNotesInCategory(category.categoryId, query)
             } else {
                 when (sortType) {
@@ -56,7 +60,7 @@ class CategoryNotesViewModel(
                 }
             }
         }.flatMapLatest { it }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(1000,0), emptyList())
+            .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(1000, 0), emptyList())
 
     fun loadCategory(categoryId: Long) {
         viewModelScope.launch {

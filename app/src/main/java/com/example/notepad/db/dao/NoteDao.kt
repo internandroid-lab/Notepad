@@ -29,11 +29,13 @@ interface NoteDao {
     @Update
     suspend fun updateNote(note: Note)
 
-    @Query("""
+    @Query(
+        """
         SELECT * FROM notes 
         WHERE onTrash = 0 
           AND (title LIKE '%' || :query || '%' OR content LIKE '%' || :query || '%')
-    """)
+    """
+    )
     fun searchNotes(query: String): Flow<List<Note>>
 
     @Delete

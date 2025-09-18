@@ -1,4 +1,4 @@
-package com.example.notepad
+package com.example.notepad.activities.main
 
 import android.os.Bundle
 import android.view.Menu
@@ -14,10 +14,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import com.example.notepad.R
 import com.example.notepad.databinding.ActivityMainBinding
 import com.example.notepad.db.entity.Category
 import com.example.notepad.utils.AppUtil
-import com.example.notepad.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupObservers() {
         lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED){
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     viewModel.categories.collect { categories ->
                         updateCategoriesInDrawer(categories)
@@ -144,6 +144,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.editNoteFragment -> {
                     showToolbarActions(false)
                 }
+
                 R.id.trashFragment -> {
                     binding.tvTitle.text = getString(R.string.trash)
                     showToolbarActions(false)
@@ -209,7 +210,7 @@ class MainActivity : AppCompatActivity() {
             Menu.NONE,
             getString(R.string.trash)
         ).setIcon(R.drawable.ic_trash)
-        .isCheckable = true
+            .isCheckable = true
     }
 
 

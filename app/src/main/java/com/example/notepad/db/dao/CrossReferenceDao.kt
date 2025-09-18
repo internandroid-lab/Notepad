@@ -26,43 +26,51 @@ interface CrossReferenceDao {
     suspend fun deleteNoteRefsByCategory(categoryId: Long)
 
     @Transaction
-    @Query("""
+    @Query(
+        """
         SELECT * FROM notes 
         INNER JOIN note_category_cross_ref AS nc 
             ON notes.noteId = nc.noteId
         WHERE nc.categoryId = :categoryId AND notes.onTrash = 0
         ORDER BY lastEdit DESC
-    """)
+    """
+    )
     fun getAllNotesInCategorySortedByDate(categoryId: Long): Flow<List<Note>>
 
     @Transaction
-    @Query("""
+    @Query(
+        """
         SELECT * FROM notes 
         INNER JOIN note_category_cross_ref AS nc 
             ON notes.noteId = nc.noteId
         WHERE nc.categoryId = :categoryId AND notes.onTrash = 0
         ORDER BY notes.title ASC
-    """)
+    """
+    )
     fun getAllNotesInCategorySortedByTitle(categoryId: Long): Flow<List<Note>>
 
     @Transaction
-    @Query("""
+    @Query(
+        """
         SELECT * FROM notes 
         INNER JOIN note_category_cross_ref AS nc 
             ON notes.noteId = nc.noteId
         WHERE nc.categoryId = :categoryId 
           AND notes.onTrash = 0 
           AND (notes.title LIKE '%' || :query || '%' OR notes.content LIKE '%' || :query || '%')
-    """)
+    """
+    )
     fun searchNotesInCategory(categoryId: Long, query: String): Flow<List<Note>>
 
     @Transaction
-    @Query("""
+    @Query(
+        """
     SELECT * FROM categories 
     INNER JOIN note_category_cross_ref AS nc 
         ON categories.categoryId = nc.categoryId
     WHERE nc.noteId = :noteId
-    """)
+    """
+    )
     suspend fun getCategoriesOfNote(noteId: Long): List<Category>
 
 }

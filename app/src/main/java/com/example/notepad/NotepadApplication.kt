@@ -1,6 +1,7 @@
-package com.example.notepad.di
+package com.example.notepad
 
 import android.app.Application
+import com.example.notepad.di.appModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.GlobalContext

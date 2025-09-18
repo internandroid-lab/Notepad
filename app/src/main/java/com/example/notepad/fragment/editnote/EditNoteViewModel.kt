@@ -1,4 +1,4 @@
-package com.example.notepad.viewmodel
+package com.example.notepad.fragment.editnote
 
 import android.text.Editable
 import android.text.Spannable
@@ -6,9 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.notepad.db.entity.Category
 import com.example.notepad.db.entity.Note
-import com.example.notepad.repository.CategoryRepository
-import com.example.notepad.repository.CrossReferenceRepository
-import com.example.notepad.repository.NoteRepository
+import com.example.notepad.repository.implement.CategoryRepositoryImpl
+import com.example.notepad.repository.implement.CrossReferenceRepositoryImpl
+import com.example.notepad.repository.implement.NoteRepositoryImpl
 import com.example.notepad.utils.TextStyle
 import com.example.notepad.utils.toBase64
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -22,9 +22,9 @@ import kotlinx.coroutines.runBlocking
 import java.util.Date
 
 class EditNoteViewModel(
-    private val noteRepo: NoteRepository,
-    private val cateRepo: CategoryRepository,
-    private val crossRefRepo: CrossReferenceRepository
+    private val noteRepo: NoteRepositoryImpl,
+    private val cateRepo: CategoryRepositoryImpl,
+    private val crossRefRepo: CrossReferenceRepositoryImpl
 ) : ViewModel() {
 
     private val _note = MutableStateFlow(Note())
@@ -56,7 +56,7 @@ class EditNoteViewModel(
         _textStyle.value = style
     }
 
-    fun loadCategory(): List<Category>  = runBlocking{
+    fun loadCategory(): List<Category> = runBlocking {
         cateRepo.getAll()
     }
 
@@ -87,8 +87,8 @@ class EditNoteViewModel(
 
     }
 
-    fun updateColor(color: String?){
-        _note.value = _note.value.copy(color = color?: "#FFFFFF")
+    fun updateColor(color: String?) {
+        _note.value = _note.value.copy(color = color ?: "#FFFFFF")
     }
 
     fun saveNote(categoryId: Long): Boolean {

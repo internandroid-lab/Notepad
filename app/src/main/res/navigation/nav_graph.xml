@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.example.notepad.fragment.HomeFragment"
+        android:name="com.example.notepad.fragment.home.HomeFragment"
         android:label="Home"
         tools:layout="@layout/fragment_home">
         <action
@@ -17,7 +17,7 @@
 
     <fragment
         android:id="@+id/editNoteFragment"
-        android:name="com.example.notepad.fragment.EditNoteFragment"
+        android:name="com.example.notepad.fragment.editnote.EditNoteFragment"
         android:label="Edit Note"
         tools:layout="@layout/fragment_edit_note">
         <argument
@@ -32,7 +32,7 @@
 
     <fragment
         android:id="@+id/categoriesFragment"
-        android:name="com.example.notepad.fragment.CategoriesFragment"
+        android:name="com.example.notepad.fragment.categories.CategoriesFragment"
         android:label="Categories"
         tools:layout="@layout/fragment_categories">
         <action
@@ -42,7 +42,7 @@
 
     <fragment
         android:id="@+id/categoryNotesFragment"
-        android:name="com.example.notepad.fragment.CategoryNotesFragment"
+        android:name="com.example.notepad.fragment.categorynotes.CategoryNotesFragment"
         android:label="Category Notes"
         tools:layout="@layout/fragment_category_notes">
         <argument
@@ -56,7 +56,7 @@
 
     <fragment
         android:id="@+id/trashFragment"
-        android:name="com.example.notepad.fragment.TrashFragment"
+        android:name="com.example.notepad.fragment.trash.TrashFragment"
         android:label="Trash"
         tools:layout="@layout/fragment_trash">
     </fragment>

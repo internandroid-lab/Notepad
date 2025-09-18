@@ -1,9 +1,9 @@
-package com.example.notepad.viewmodel
+package com.example.notepad.fragment.trash
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.notepad.db.entity.Note
-import com.example.notepad.repository.NoteRepository
+import com.example.notepad.repository.implement.NoteRepositoryImpl
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -14,9 +14,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class TrashViewModel(private val noteRepo: NoteRepository) : ViewModel() {
+class TrashViewModel(private val noteRepo: NoteRepositoryImpl) : ViewModel() {
     val notes: StateFlow<List<Note>> =
-        noteRepo.getAllTrashedNotes().stateIn(viewModelScope, SharingStarted.WhileSubscribed(1000,0), emptyList())
+        noteRepo.getAllTrashedNotes()
+            .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(1000, 0), emptyList())
 
     private val _isSelectionMode = MutableStateFlow(false)
     val isSelectionMode: StateFlow<Boolean> = _isSelectionMode.asStateFlow()

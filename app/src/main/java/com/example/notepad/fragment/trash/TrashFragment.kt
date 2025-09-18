@@ -1,26 +1,24 @@
-package com.example.notepad.fragment
+package com.example.notepad.fragment.trash
 
 import android.app.AlertDialog
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.addCallback
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.notepad.R
-import com.example.notepad.adapter.NoteAdapter
+import com.example.notepad.fragment.adapter.NoteAdapter
 import com.example.notepad.databinding.FragmentTrashBinding
 import com.example.notepad.db.entity.Note
 import com.example.notepad.utils.AppUtil
-import com.example.notepad.viewmodel.TrashViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import kotlin.getValue
 
 class TrashFragment : Fragment() {
 
@@ -51,9 +49,9 @@ class TrashFragment : Fragment() {
     private fun setupRecyclerView() {
         noteAdapter = NoteAdapter(
             onNoteClick = { note ->
-                if(viewModel.isSelectionMode.value){
+                if (viewModel.isSelectionMode.value) {
                     viewModel.toggleSelection(note)
-                }else{
+                } else {
                     showTrashDialog(note)
                 }
             },
@@ -76,7 +74,7 @@ class TrashFragment : Fragment() {
 
     private fun setupObservers() {
         viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED){
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     viewModel.notes.collect { notes ->
                         noteAdapter.submitList(notes)
@@ -85,14 +83,15 @@ class TrashFragment : Fragment() {
                 launch {
                     viewModel.selectedNotes.collect {
                         noteAdapter.notifyDataSetChanged()
-                        binding.tvToolbarTitle.text =  it.size.toString()
+                        binding.tvToolbarTitle.text = it.size.toString()
                     }
                 }
                 launch {
                     viewModel.isSelectionMode.collect { isSelectionMode ->
                         activity?.findViewById<View>(R.id.toolbar)?.visibility =
                             if (isSelectionMode) View.GONE else View.VISIBLE
-                        binding.toolbar.visibility = if (isSelectionMode) View.VISIBLE else View.GONE
+                        binding.toolbar.visibility =
+                            if (isSelectionMode) View.VISIBLE else View.GONE
                     }
                 }
                 launch {

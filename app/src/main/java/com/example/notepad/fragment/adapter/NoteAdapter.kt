@@ -1,19 +1,19 @@
-package com.example.notepad.adapter
+package com.example.notepad.fragment.adapter
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.graphics.toColorInt
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.notepad.databinding.ItemNoteBinding
 import com.example.notepad.db.entity.Note
-import androidx.core.graphics.toColorInt
 
 class NoteAdapter(
     private val onNoteClick: (Note) -> Unit = {},
     private val onLongClick: (Note) -> Unit = {},
-    private val isSelected: (Note) -> Boolean = {true}
+    private val isSelected: (Note) -> Boolean = { true }
 ) :
     ListAdapter<Note, NoteAdapter.NoteViewHolder>(NoteDiffCallback()) {
 
@@ -31,7 +31,7 @@ class NoteAdapter(
     }
 
     override fun onBindViewHolder(holder: NoteViewHolder, position: Int, payloads: List<Any?>) {
-        if(payloads.isNotEmpty()){
+        if (payloads.isNotEmpty()) {
             payloads.forEach { payload ->
                 val bundle = payload as? Bundle ?: return@forEach
 
@@ -42,7 +42,9 @@ class NoteAdapter(
                     holder.binding.tvLastEdit.text = bundle.getString("lastEditStr")
                 }
                 if (bundle.containsKey("color")) {
-                    holder.binding.groupLl.setBackgroundColor(bundle.getString("color")!!.toColorInt())
+                    holder.binding.groupLl.setBackgroundColor(
+                        bundle.getString("color")!!.toColorInt()
+                    )
                 }
             }
         } else {
@@ -50,7 +52,8 @@ class NoteAdapter(
         }
     }
 
-    inner class NoteViewHolder(val binding: ItemNoteBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class NoteViewHolder(val binding: ItemNoteBinding) :
+        RecyclerView.ViewHolder(binding.root) {
 
         fun bind(note: Note) {
             binding.tvNoteTitle.text = note.title
@@ -85,16 +88,16 @@ class NoteAdapter(
 
         override fun getChangePayload(oldItem: Note, newItem: Note): Any? {
             val bundle = Bundle()
-            if(oldItem.title != newItem.title){
+            if (oldItem.title != newItem.title) {
                 bundle.putString("title", newItem.title)
             }
-            if(oldItem.lastEditStr != newItem.lastEditStr){
+            if (oldItem.lastEditStr != newItem.lastEditStr) {
                 bundle.putString("lastEditStr", newItem.lastEditStr)
             }
-            if(oldItem.color != newItem.color){
-                bundle.putString("color",newItem.color)
+            if (oldItem.color != newItem.color) {
+                bundle.putString("color", newItem.color)
             }
-            return if (bundle.size()==0) null else bundle
+            return if (bundle.size() == 0) null else bundle
         }
     }
 }

@@ -1,9 +1,9 @@
-package com.example.notepad.viewmodel
+package com.example.notepad.fragment.categories
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.notepad.db.entity.Category
-import com.example.notepad.repository.CategoryRepository
+import com.example.notepad.repository.implement.CategoryRepositoryImpl
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -12,10 +12,11 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class CategoriesViewModel(private val cateRepo: CategoryRepository) : ViewModel() {
+class CategoriesViewModel(private val cateRepo: CategoryRepositoryImpl) : ViewModel() {
 
     val categories: StateFlow<List<Category>> =
-        cateRepo.getAllCategories().stateIn(viewModelScope, SharingStarted.WhileSubscribed(1000,0), emptyList())
+        cateRepo.getAllCategories()
+            .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(1000, 0), emptyList())
 
     private val _event = MutableSharedFlow<String>()
     val event: SharedFlow<String> = _event.asSharedFlow()

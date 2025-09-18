@@ -1,4 +1,4 @@
-package com.example.notepad.fragment
+package com.example.notepad.fragment.categories
 
 import android.app.AlertDialog
 import android.os.Bundle
@@ -15,11 +15,10 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.notepad.R
-import com.example.notepad.adapter.CategoryAdapter
+import com.example.notepad.fragment.adapter.CategoryAdapter
 import com.example.notepad.databinding.FragmentCategoriesBinding
 import com.example.notepad.db.entity.Category
 import com.example.notepad.utils.AppUtil
-import com.example.notepad.viewmodel.CategoriesViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -49,6 +48,7 @@ class CategoriesFragment : Fragment() {
 
         AppUtil.setupKeyboardHiderForAllViews(view)
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -78,7 +78,7 @@ class CategoriesFragment : Fragment() {
 
     private fun setupObservers() {
         viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED){
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     viewModel.categories.collect { categories ->
                         categoryAdapter.submitList(categories)

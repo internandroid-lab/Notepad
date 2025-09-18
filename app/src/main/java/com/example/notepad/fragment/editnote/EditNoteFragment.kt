@@ -1,4 +1,4 @@
-package com.example.notepad.fragment
+package com.example.notepad.fragment.editnote
 
 import android.app.AlertDialog
 import android.content.Intent
@@ -21,24 +21,23 @@ import android.widget.SeekBar
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.graphics.drawable.toDrawable
+import androidx.core.graphics.toColorInt
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
-import com.example.notepad.R
-import com.example.notepad.databinding.FragmentEditNoteBinding
-import com.example.notepad.utils.AppUtil
-import com.example.notepad.viewmodel.EditNoteViewModel
-import org.koin.androidx.viewmodel.ext.android.viewModel
-import yuku.ambilwarna.AmbilWarnaDialog
-import androidx.core.graphics.toColorInt
-import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
+import com.example.notepad.R
 import com.example.notepad.databinding.DialogSizeBinding
+import com.example.notepad.databinding.FragmentEditNoteBinding
+import com.example.notepad.utils.AppUtil
 import com.example.notepad.utils.TextStyle
 import com.example.notepad.utils.toSpannable
 import kotlinx.coroutines.launch
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import yuku.ambilwarna.AmbilWarnaDialog
 
 class EditNoteFragment : Fragment() {
 
@@ -101,13 +100,14 @@ class EditNoteFragment : Fragment() {
 
     private fun setupObservers() {
         viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED){
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     viewModel.note.collect { note ->
                         note.let {
                             if (!isTitleEditing && binding.etTitle.text.toString() != it.title) {
                                 binding.etTitle.setText(it.title)
-                                val safePos = it.title.length.coerceAtMost(binding.etTitle.text?.length ?: 0)
+                                val safePos =
+                                    it.title.length.coerceAtMost(binding.etTitle.text?.length ?: 0)
                                 binding.etTitle.setSelection(safePos)
                             }
 
@@ -115,7 +115,9 @@ class EditNoteFragment : Fragment() {
                                 val spanned = it.content.toSpannable()
                                 if (binding.etContent.text.toString() != spanned.toString()) {
                                     binding.etContent.setText(spanned)
-                                    val safePos = spanned.length.coerceAtMost(binding.etContent.text?.length ?: 0)
+                                    val safePos = spanned.length.coerceAtMost(
+                                        binding.etContent.text?.length ?: 0
+                                    )
                                     binding.etContent.setSelection(safePos)
 
                                     if (spanned.isNotEmpty()) {
@@ -162,8 +164,8 @@ class EditNoteFragment : Fragment() {
 
         binding.tvSave.setOnClickListener {
             val success = viewModel.saveNote(categoryId)
-            if(success){
-                if(viewModel.note.value.noteId==0L) findNavController().navigateUp()
+            if (success) {
+                if (viewModel.note.value.noteId == 0L) findNavController().navigateUp()
             }
         }
 
@@ -271,26 +273,26 @@ class EditNoteFragment : Fragment() {
         }
 
         binding.btnHighligh.setOnClickListener {
-            showColorPicker{ selectedColor ->
+            showColorPicker { selectedColor ->
                 viewModel.toggleBackgroundTextColor(selectedColor?.toColorInt())
             }
         }
 
         binding.btnTextColor.setOnClickListener {
-            showColorPicker{ selectedColor ->
+            showColorPicker { selectedColor ->
                 viewModel.toggleTextColor(selectedColor?.toColorInt())
             }
         }
 
         binding.btnSize.setOnClickListener {
-            showTextSizeDialog{
+            showTextSizeDialog {
                 viewModel.toggleTextSize(it)
             }
         }
 
         binding.btnCloseFormat.setOnClickListener {
             binding.groupFormat.visibility = View.GONE
-            AppUtil.saveFormatState(requireContext(),false)
+            AppUtil.saveFormatState(requireContext(), false)
         }
     }
 
@@ -298,7 +300,7 @@ class EditNoteFragment : Fragment() {
         val popup = PopupMenu(requireContext(), binding.ivAbout)
         popup.menuInflater.inflate(R.menu.edit_menu, popup.menu)
 
-        if(viewModel.note.value.noteId==0L){
+        if (viewModel.note.value.noteId == 0L) {
             popup.menu.findItem(R.id.action_delete).isVisible = false
             popup.menu.findItem(R.id.add_to_category).isVisible = false
             popup.menu.findItem(R.id.action_export).isVisible = false
@@ -311,25 +313,30 @@ class EditNoteFragment : Fragment() {
                     findNavController().navigateUp()
                     true
                 }
+
                 R.id.add_to_category -> {
                     showPickCategoryDialog()
                     true
                 }
+
                 R.id.action_export -> {
                     exportFolderLauncher.launch(null)
                     true
                 }
+
                 R.id.color -> {
-                    showColorPicker{ selectColor ->
+                    showColorPicker { selectColor ->
                         viewModel.updateColor(selectColor)
                     }
                     true
                 }
-                R.id.format ->{
+
+                R.id.format -> {
                     binding.groupFormat.visibility = View.VISIBLE
-                    AppUtil.saveFormatState(requireContext(),true)
+                    AppUtil.saveFormatState(requireContext(), true)
                     true
                 }
+
                 else -> false
             }
         }
@@ -341,7 +348,7 @@ class EditNoteFragment : Fragment() {
     ) { uri ->
         if (uri != null) {
             val note = viewModel.note.value
-            if (note.noteId!=0L) {
+            if (note.noteId != 0L) {
                 requireContext().contentResolver.takePersistableUriPermission(
                     uri,
                     Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
@@ -363,6 +370,7 @@ class EditNoteFragment : Fragment() {
                     val hexColor = String.format("#%08X", color)
                     onColorSelected(hexColor)
                 }
+
                 override fun onCancel(dialog: AmbilWarnaDialog?) {
                     onColorSelected(null)
                 }
@@ -437,8 +445,10 @@ class EditNoteFragment : Fragment() {
         val end = pos + 1
 
         val styleSpans = spanned.getSpans(start, end, StyleSpan::class.java)
-        val isBold = styleSpans.any { it.style == Typeface.BOLD || it.style == Typeface.BOLD_ITALIC }
-        val isItalic = styleSpans.any { it.style == Typeface.ITALIC || it.style == Typeface.BOLD_ITALIC }
+        val isBold =
+            styleSpans.any { it.style == Typeface.BOLD || it.style == Typeface.BOLD_ITALIC }
+        val isItalic =
+            styleSpans.any { it.style == Typeface.ITALIC || it.style == Typeface.BOLD_ITALIC }
         val isUnderline = spanned.getSpans(start, end, UnderlineSpan::class.java).isNotEmpty()
 
         val fgSpan = spanned.getSpans(start, end, ForegroundColorSpan::class.java).firstOrNull()

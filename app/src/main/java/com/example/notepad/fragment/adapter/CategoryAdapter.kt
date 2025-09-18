@@ -1,4 +1,4 @@
-package com.example.notepad.adapter
+package com.example.notepad.fragment.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

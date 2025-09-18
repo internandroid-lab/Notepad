@@ -1,4 +1,4 @@
-package com.example.notepad.fragment
+package com.example.notepad.fragment.home
 
 import android.app.AlertDialog
 import android.content.Intent
@@ -17,14 +17,13 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.notepad.MainActivity
 import com.example.notepad.R
-import com.example.notepad.adapter.NoteAdapter
+import com.example.notepad.activities.main.MainActivity
+import com.example.notepad.fragment.adapter.NoteAdapter
 import com.example.notepad.databinding.FragmentHomeBinding
 import com.example.notepad.db.entity.Note
 import com.example.notepad.utils.AppUtil
 import com.example.notepad.utils.SortType
-import com.example.notepad.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.Date
@@ -133,8 +132,10 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
                     viewModel.isSelectionMode.collect { isSelectionMode ->
                         activity?.findViewById<View>(R.id.toolbar)?.visibility =
                             if (isSelectionMode) View.GONE else View.VISIBLE
-                        binding.fabAddNote.visibility = if (isSelectionMode) View.GONE else View.VISIBLE
-                        binding.toolbar.visibility = if (isSelectionMode) View.VISIBLE else View.GONE
+                        binding.fabAddNote.visibility =
+                            if (isSelectionMode) View.GONE else View.VISIBLE
+                        binding.toolbar.visibility =
+                            if (isSelectionMode) View.VISIBLE else View.GONE
                     }
                 }
                 launch {
@@ -166,7 +167,7 @@ class HomeFragment : Fragment(), MainActivity.ToolbarController {
 
         binding.tvExport.setOnClickListener {
             notesToExport = viewModel.selectedNotes.value.toList()
-            if(notesToExport.isNotEmpty()){
+            if (notesToExport.isNotEmpty()) {
                 exportFolderLauncher.launch(null)
                 viewModel.clearSelection()
             }

@@ -116,7 +116,7 @@ object AppUtil {
         }
     }
 
-    fun exportMultipleNotes(context: Context, notes: List<Note>, treeUri: Uri){
+    fun exportMultipleNotes(context: Context, notes: List<Note>, treeUri: Uri) {
         for (note in notes) {
             exportNote(context, note, treeUri)
         }
