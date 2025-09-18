@@ -77,9 +77,6 @@ class EditNoteFragment : Fragment() {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             findNavController().navigateUp()
         }
-
-//        AppUtil.setupKeyboardHiderForAllViews(view)
-
     }
 
     override fun onDestroyView() {
