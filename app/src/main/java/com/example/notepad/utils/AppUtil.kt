@@ -93,7 +93,8 @@ object AppUtil {
             DocumentsContract.getTreeDocumentId(treeUri)
         )
 
-        val fileName = (note.title.ifBlank { "Untitled" } + ".txt")
+        val fileName = (note.title.ifBlank { "Untitled" })
+            .let { if (it.endsWith(".txt", ignoreCase = true)) it else "$it.txt" }
             .replace("[\\\\/:*?\"<>|]".toRegex(), "_")
 
         try {
